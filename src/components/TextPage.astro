@@ -1,0 +1,67 @@
+---
+// Gabarit des pages de texte (à propos, méthode, mentions légales, confidentialité, contact).
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHead from './PageHead.astro';
+import { formatDate, isoDay } from '../lib/format.ts';
+import { absoluteUrl } from '../lib/url.ts';
+import { webPageNode, type JsonLdNode } from '../lib/jsonld.ts';
+import type { SocialImage } from '../lib/social.ts';
+
+interface Props {
+  title: string;
+  heading: string;
+  kicker?: string;
+  lead?: string;
+  description: string;
+  path: string;
+  image: SocialImage;
+  updated?: Date;
+  noindex?: boolean;
+  pageType?: 'WebPage' | 'AboutPage' | 'ContactPage';
+  jsonLd?: JsonLdNode[];
+}
+
+const { title, heading, kicker, lead, description, path, image, updated, noindex = false, pageType = 'WebPage', jsonLd = [] } = Astro.props;
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: heading, path },
+];
+const graph = [webPageNode({ type: pageType, name: heading, description, pageUrl: absoluteUrl(path), dateModified: updated }), ...jsonLd];
+---
+
+<BaseLayout title={title} description={description} path={path} image={image} crumbs={crumbs} noindex={noindex} jsonLd={graph} modified={updated}>
+  <PageHead crumbs={crumbs} kicker={kicker} title={heading} lead={lead} />
+  <div class="container container--narrow text-page">
+    {
+      updated && (
+        <p class="text-page__updated">
+          Mis à jour le <time datetime={isoDay(updated)}>{formatDate(updated)}</time>
+        </p>
+      )
+    }
+    <div class="prose text-page__body">
+      <slot />
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .text-page {
+    padding-block: clamp(2rem, 1.5rem + 2vw, 3rem) clamp(3rem, 2rem + 4vw, 5rem);
+  }
+
+  .text-page__updated {
+    margin-bottom: 1.5rem;
+    color: var(--ink-mute);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .text-page__body :global(h2) {
+    margin-top: 2.2em;
+  }
+
+  .text-page__body > :global(h2:first-child) {
+    margin-top: 0;
+  }
+</style>

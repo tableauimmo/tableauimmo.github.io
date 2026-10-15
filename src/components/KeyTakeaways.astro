@@ -1,0 +1,47 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  items: string[];
+  title?: string;
+}
+
+const { items, title = 'En bref' } = Astro.props;
+---
+
+<section class="takeaways note note--lined note--tilt-l" aria-labelledby="en-bref">
+  <h2 id="en-bref" class="note__title">{title}</h2>
+  <ul>
+    {
+      items.map((item) => (
+        <li>
+          <Icon name="check" size={20} />
+          <span>{item}</span>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .takeaways ul {
+    display: grid;
+    gap: 0.7rem;
+    margin: 0.85rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .takeaways li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.6rem;
+    line-height: 1.55;
+  }
+
+  .takeaways li :global(svg) {
+    margin-top: 0.2rem;
+    color: var(--green-ink);
+    stroke-width: 2.6;
+  }
+</style>

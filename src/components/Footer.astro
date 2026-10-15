@@ -1,0 +1,161 @@
+---
+import Logo from './Logo.astro';
+import SocialLinks from './SocialLinks.astro';
+import { SITE } from '../../site.config.mjs';
+import { CATEGORY_LIST, categoryPath } from '../data/categories.ts';
+import { TOOL_LIST, toolPath } from '../data/tools.ts';
+import { href } from '../lib/url.ts';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer board">
+  <div class="container site-footer__grid">
+    <div class="site-footer__brand">
+      <Logo size={40} />
+      <p class="site-footer__tagline">{SITE.tagline} Des vidéos de 10 minutes, des calculateurs et un lexique, sourcés et datés.</p>
+      <SocialLinks />
+    </div>
+
+    <nav aria-labelledby="footer-themes">
+      <h2 id="footer-themes" class="site-footer__title">Thèmes</h2>
+      <ul>
+        {
+          CATEGORY_LIST.map((category) => (
+            <li>
+              <a href={href(categoryPath(category.key))}>{category.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <nav aria-labelledby="footer-tools">
+      <h2 id="footer-tools" class="site-footer__title">Outils</h2>
+      <ul>
+        {
+          TOOL_LIST.map((tool) => (
+            <li>
+              <a href={href(toolPath(tool.id))}>{tool.name}</a>
+            </li>
+          ))
+        }
+        <li><a href={href('/lexique/')}>Le lexique</a></li>
+        <li><a href={href('/episodes/')}>Tous les épisodes</a></li>
+      </ul>
+    </nav>
+
+    <nav aria-labelledby="footer-info">
+      <h2 id="footer-info" class="site-footer__title">Infos</h2>
+      <ul>
+        <li><a href={href('/a-propos/')}>À propos</a></li>
+        <li><a href={href('/methode/')}>Notre méthode</a></li>
+        <li><a href={href('/contact/')}>Contact</a></li>
+        <li><a href={href('/mentions-legales/')}>Mentions légales</a></li>
+        <li><a href={href('/confidentialite/')}>Confidentialité</a></li>
+        <li><a href={href('/plan-du-site/')}>Plan du site</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="container site-footer__bottom">
+    <p class="site-footer__disclaimer">
+      Contenus pédagogiques et généraux : ils ne constituent ni un conseil en investissement, ni un conseil fiscal ou juridique personnalisé. Tout investissement
+      comporte des risques, dont la perte en capital ; les performances passées ne préjugent pas des performances futures.
+    </p>
+    <p class="site-footer__ai">Illustrations et voix générées avec l’aide de l’IA ; contenu vérifié et sourcé.</p>
+    <p class="site-footer__copy">© {year} {SITE.name}</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: auto;
+    padding-top: clamp(3rem, 2rem + 3vw, 4.5rem);
+    color: var(--chalk-soft);
+    font-size: var(--text-sm);
+  }
+
+  .site-footer__grid {
+    display: grid;
+    grid-template-columns: minmax(16rem, 1.6fr) repeat(3, minmax(10rem, 1fr));
+    gap: 2.5rem;
+  }
+
+  .site-footer__brand {
+    display: grid;
+    gap: 1.1rem;
+    align-content: start;
+    color: var(--chalk);
+  }
+
+  .site-footer__tagline {
+    max-width: 24rem;
+    color: var(--chalk-soft);
+    line-height: 1.6;
+  }
+
+  .site-footer__title {
+    margin-bottom: 0.85rem;
+    color: var(--yellow);
+    font-family: var(--font-hand);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .site-footer ul:not(.social) {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-footer nav a {
+    color: var(--chalk-soft);
+    text-decoration: none;
+  }
+
+  .site-footer nav a:hover {
+    color: var(--chalk);
+    text-decoration: underline;
+  }
+
+  .site-footer__bottom {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 3rem;
+    padding-block: 1.75rem 2rem;
+    border-top: 1px solid var(--chalk-line);
+    color: var(--chalk-mute);
+    font-size: var(--text-xs);
+    line-height: 1.6;
+  }
+
+  .site-footer__disclaimer {
+    max-width: 60rem;
+  }
+
+  .site-footer__copy {
+    color: var(--chalk-soft);
+    font-weight: 600;
+  }
+
+  @media (max-width: 860px) {
+    .site-footer__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .site-footer__brand {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .site-footer__grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2rem;
+    }
+  }
+</style>

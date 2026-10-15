@@ -1,0 +1,35 @@
+# Dépendances et builds
+node_modules/
+dist/
+dist-fixture/
+.astro/
+.e2e/
+
+# Tests et captures
+test-results/
+playwright-report/
+.screens/
+
+# Environnement local (clés API)
+.env
+.env.*
+!.env.example
+.secrets/
+
+# Journaux
+*.log
+
+# Système
+.DS_Store
+
+# Studio de création des épisodes (dépôt privé séparé, jamais publié)
+/studio/
+studio/
+
+# Routine de visibilité : mesures et rapports restent sur la machine (le dépôt du site est public)
+visibilite/historique/*
+visibilite/rapports/*
+visibilite/geo/*
+!visibilite/historique/.gitkeep
+!visibilite/rapports/.gitkeep
+!visibilite/geo/.gitkeep

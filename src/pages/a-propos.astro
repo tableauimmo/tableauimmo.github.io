@@ -1,0 +1,74 @@
+---
+import TextPage from '../components/TextPage.astro';
+import { SITE } from '../../site.config.mjs';
+import { ogImage } from '../lib/social.ts';
+import { href } from '../lib/url.ts';
+---
+
+<TextPage
+  title="À propos et charte éditoriale"
+  heading="À propos"
+  kicker="La charte éditoriale"
+  lead={`${SITE.name} explique l’investissement immobilier en France, du plus courant au plus pointu, avec un tableau noir, des chiffres et des sources.`}
+  description="Qui est Tableau Immo, comment les vidéos sont fabriquées et la charte éditoriale : pédagogie, sources officielles, indépendance, pas de conseil personnalisé."
+  path="/a-propos/"
+  image={ogImage('methode', `À propos de ${SITE.name}`)}
+  updated={new Date('2026-10-15')}
+  pageType="AboutPage"
+>
+  <h2>Le projet</h2>
+  <p>
+    {SITE.name} est une chaîne vidéo (YouTube, TikTok, Instagram, Facebook, LinkedIn et X) consacrée à l’investissement immobilier en France. Chaque épisode dure
+    une dizaine de minutes et suit le même principe : un sujet, posé au tableau. Des mains tracent les schémas à la craie, scotchent des photos, alignent les
+    chiffres dans un tableau, puis le récapitulent. Ce site prolonge les vidéos : la page de chaque épisode reprend le tableau, les points clés, les sources et la
+    transcription, et des <a href={href('/outils/')}>calculateurs</a> et un <a href={href('/lexique/')}>lexique</a> permettent d’aller plus loin.
+  </p>
+
+  <h2>Notre charte éditoriale</h2>
+  <h3>1. La pédagogie avant tout</h3>
+  <p>
+    Nous expliquons des mécanismes : comment se calcule une mensualité, ce que change un régime fiscal, ce que dit un texte. L’objectif est que chacun comprenne
+    assez pour poser les bonnes questions à son banquier, son notaire ou son conseiller, et pour décider par lui-même.
+  </p>
+  <h3>2. Jamais de conseil personnalisé</h3>
+  <p>
+    Aucune vidéo, aucune page ne vous dit quoi acheter, ni quand. Les exemples chiffrés sont des <strong>cas d’école</strong>, présentés comme tels. Les risques
+    (vacance, impayés, travaux, baisse des prix, évolution de la fiscalité, perte en capital) sont toujours mentionnés. Nous ne promettons aucun rendement.
+  </p>
+  <h3>3. Des sources officielles, des pages datées</h3>
+  <p>
+    Chaque règle s’appuie sur une source officielle : Légifrance, BOFiP, impots.gouv.fr, service-public.fr, economie.gouv.fr, Banque de France, INSEE, ANIL. Les
+    sources sont listées sous chaque épisode et chaque définition. Chaque page indique la date de sa dernière vérification ; quand une règle est en discussion
+    (projet de loi de finances, par exemple), nous le signalons avec la date.
+  </p>
+  <h3>4. L’indépendance</h3>
+  <p>
+    Ce site n’affiche aucune publicité et ne contient aucun lien d’affiliation. Nous ne sommes rémunérés par aucune banque, aucun promoteur, aucun courtier pour
+    parler d’un produit. Si un partenariat devait un jour exister, il serait signalé clairement, dans la vidéo comme sur la page.
+  </p>
+  <h3>5. Corriger vite</h3>
+  <p>
+    Une erreur, une règle qui a changé ? Écrivez-nous (<a href={href('/contact/')}>contact</a>) : la page est corrigée, la date de mise à jour modifiée, et la
+    correction signalée dans la vidéo suivante si elle est importante.
+  </p>
+
+  <h2>Comment les vidéos sont fabriquées</h2>
+  <p>
+    Les épisodes sont écrits et produits sous la signature « {SITE.name} », avec l’aide d’outils d’intelligence artificielle, en toute transparence :
+  </p>
+  <ul>
+    <li>les <strong>illustrations</strong> (dessins à la craie, photos, personnages découpés, mains qui animent le tableau) sont générées ou retouchées avec l’aide de l’IA ;</li>
+    <li>la <strong>voix</strong> du narrateur est une voix de synthèse ;</li>
+    <li>
+      le <strong>contenu</strong> (règles, chiffres, formules, sources) est écrit, relu, vérifié par un humain et sourcé avant publication. Le narrateur ne se présente
+      jamais comme un expert humain et ne raconte aucune expérience personnelle.
+    </li>
+  </ul>
+  <p>La mention « Illustrations et voix générées avec l’aide de l’IA ; contenu vérifié et sourcé » figure sur chaque page d’épisode et dans chaque description vidéo.</p>
+
+  <h2>Ce que nous ne sommes pas</h2>
+  <p>
+    {SITE.name} n’est ni une banque, ni un courtier, ni un conseiller en investissements financiers, ni un cabinet d’avocats ou d’expertise comptable. Pour une
+    décision qui engage votre patrimoine, consultez un professionnel habilité qui étudiera votre situation complète.
+  </p>
+</TextPage>

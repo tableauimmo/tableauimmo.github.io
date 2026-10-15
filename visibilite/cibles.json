@@ -1,0 +1,34 @@
+{
+  "requetes": [
+    { "texte": "calcul rendement locatif", "priorite": 1, "origine": "graine", "ajouteeLe": "2026-10-15" },
+    { "texte": "calcul mensualité crédit immobilier", "priorite": 1, "origine": "graine", "ajouteeLe": "2026-10-15" },
+    { "texte": "capacité d'emprunt 35 %", "priorite": 1, "origine": "graine", "ajouteeLe": "2026-10-15" },
+    { "texte": "calcul cash flow immobilier", "priorite": 1, "origine": "graine", "ajouteeLe": "2026-10-15" },
+    { "texte": "LMNP 2026", "priorite": 1, "origine": "graine", "ajouteeLe": "2026-10-15" },
+    { "texte": "dispositif Jeanbrun", "priorite": 1, "origine": "graine", "ajouteeLe": "2026-10-15" },
+    { "texte": "déficit foncier plafond", "priorite": 1, "origine": "graine", "ajouteeLe": "2026-10-15" },
+    { "texte": "investissement locatif débutant", "priorite": 2, "origine": "graine", "ajouteeLe": "2026-10-15" },
+    { "texte": "SCI à l'IS ou à l'IR", "priorite": 2, "origine": "graine", "ajouteeLe": "2026-10-15" },
+    { "texte": "règle HCSF 35 %", "priorite": 2, "origine": "graine", "ajouteeLe": "2026-10-15" },
+    { "texte": "passoire thermique location 2028", "priorite": 2, "origine": "graine", "ajouteeLe": "2026-10-15" },
+    { "texte": "plus-value immobilière abattement", "priorite": 2, "origine": "graine", "ajouteeLe": "2026-10-15" },
+    { "texte": "micro-foncier ou régime réel", "priorite": 2, "origine": "graine", "ajouteeLe": "2026-10-15" },
+    { "texte": "loi Le Meur meublé de tourisme", "priorite": 3, "origine": "graine", "ajouteeLe": "2026-10-15" },
+    { "texte": "frais de notaire 2026", "priorite": 3, "origine": "graine", "ajouteeLe": "2026-10-15" },
+    { "texte": "tableau immo", "priorite": 1, "origine": "graine", "ajouteeLe": "2026-10-15" }
+  ],
+  "prompts": [
+    { "texte": "Comment calculer le rendement net d'un investissement locatif ?", "priorite": 1, "ajouteeLe": "2026-10-15" },
+    { "texte": "Qu'est-ce que le dispositif Jeanbrun pour la location nue en 2026 ?", "priorite": 1, "ajouteeLe": "2026-10-15" },
+    { "texte": "Qu'est-ce qui change pour le LMNP en 2026 ?", "priorite": 1, "ajouteeLe": "2026-10-15" },
+    { "texte": "Quelle est la règle des 35 % d'endettement du HCSF ?", "priorite": 2, "ajouteeLe": "2026-10-15" },
+    { "texte": "Quelles chaînes YouTube pour apprendre l'investissement immobilier en France ?", "priorite": 1, "ajouteeLe": "2026-10-15" },
+    { "texte": "Qu'est-ce que Tableau Immo ?", "priorite": 2, "ajouteeLe": "2026-10-15" }
+  ],
+  "concurrents": [
+    { "nom": "Meilleurtaux" },
+    { "nom": "PAP" },
+    { "nom": "SeLoger" },
+    { "nom": "ANIL" }
+  ]
+}

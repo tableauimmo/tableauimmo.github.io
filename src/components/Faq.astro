@@ -1,0 +1,97 @@
+---
+interface Props {
+  items: { q: string; a: string }[];
+  title?: string;
+  id?: string;
+}
+
+const { items, title = 'Questions fréquentes', id = 'faq' } = Astro.props;
+---
+
+<section class="faq" aria-labelledby={`${id}-title`}>
+  <h2 id={`${id}-title`} class="block-title">{title}</h2>
+  <div class="faq__list">
+    {
+      items.map((item, index) => (
+        <details class="faq__item" open={index === 0}>
+          <summary class="faq__question">
+            <span>{item.q}</span>
+            <span class="faq__toggle" aria-hidden="true" />
+          </summary>
+          <p class="faq__answer">{item.a}</p>
+        </details>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .faq__list {
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .faq__item {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .faq__item[open] {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .faq__question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    font-weight: 700;
+    line-height: 1.4;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .faq__question::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq__toggle {
+    position: relative;
+    flex: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: var(--paper);
+  }
+
+  .faq__toggle::before,
+  .faq__toggle::after {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 0.7rem;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--ink);
+    transform: translate(-50%, -50%);
+    transition: transform 0.25s var(--ease-out);
+  }
+
+  .faq__toggle::after {
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+
+  .faq__item[open] .faq__toggle::after {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  .faq__answer {
+    padding: 0 1.2rem 1.15rem;
+    color: var(--ink-soft);
+    line-height: 1.65;
+  }
+</style>

@@ -1,0 +1,54 @@
+---
+import '@fontsource-variable/inter/wght.css';
+import '@fontsource/cabin-sketch/700.css';
+import '@fontsource/kalam/400.css';
+import '@fontsource/kalam/700.css';
+import '../styles/global.css';
+import '../styles/components.css';
+import interFont from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import sketchFont from '@fontsource/cabin-sketch/files/cabin-sketch-latin-700-normal.woff2?url';
+import Seo, { type SeoProps } from '../components/Seo.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE } from '../../site.config.mjs';
+import { breadcrumbNode, organizationNode, websiteNode, type Crumb } from '../lib/jsonld.ts';
+import { absoluteUrl, href } from '../lib/url.ts';
+
+interface Props extends SeoProps {
+  /** Fil d'Ariane complet (accueil compris) pour les données structurées. Absent sur l'accueil. */
+  crumbs?: Crumb[];
+  bodyClass?: string;
+}
+
+const { crumbs, bodyClass, jsonLd = [], ...seo } = Astro.props;
+const graph = [organizationNode(absoluteUrl('/icon-512.png')), websiteNode(), ...(crumbs ? [breadcrumbNode(crumbs)] : []), ...jsonLd];
+---
+
+<!doctype html>
+<html lang={SITE.language} dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={sketchFont} as="font" type="font/woff2" crossorigin />
+    <Seo {...seo} jsonLd={graph} />
+    <meta name="theme-color" content={SITE.themeColor} />
+    <meta name="color-scheme" content="light" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="author" content={SITE.name} />
+    <link rel="icon" href={href('/favicon.ico')} sizes="48x48" />
+    <link rel="icon" href={href('/favicon.svg')} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={href('/apple-touch-icon.png')} />
+    <link rel="manifest" href={href('/manifest.webmanifest')} />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.name} — nouveaux épisodes`} href={href('/rss.xml')} />
+    <link rel="sitemap" type="application/xml" href={href('/sitemap-index.xml')} />
+  </head>
+  <body class={bodyClass}>
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    <Header />
+    <main id="contenu" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

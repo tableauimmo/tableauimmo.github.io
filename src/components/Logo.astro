@@ -1,0 +1,43 @@
+---
+// Logo : petit tableau noir avec une maison à la craie et un trait jaune, puis « Tableau Immo » en Cabin Sketch.
+import { SITE } from '../../site.config.mjs';
+
+interface Props {
+  size?: number;
+  withName?: boolean;
+}
+
+const { size = 40, withName = true } = Astro.props;
+---
+
+<span class="logo">
+  <svg class="logo__mark" viewBox="0 0 40 40" width={size} height={size} aria-hidden="true" focusable="false">
+    <rect x="1.75" y="1.75" width="36.5" height="36.5" rx="7" fill="#26302d" stroke="#7a6149" stroke-width="3.5"></rect>
+    <path d="M10.5 20.5 20 12.2l9.5 8.3" fill="none" stroke="#edede6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+    <path d="M13.4 18.6v8.9h13.2v-8.9" fill="none" stroke="#edede6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+    <path d="M18 27.5v-4.4h4v4.4" fill="none" stroke="#edede6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+    <path d="M9 32.4c5.6-1.6 15.1-1.9 22-.6" fill="none" stroke="#f2d45c" stroke-width="2.6" stroke-linecap="round"></path>
+  </svg>
+  {withName && <span class="logo__name">{SITE.name}</span>}
+</span>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .logo__mark {
+    flex: none;
+  }
+
+  .logo__name {
+    font-family: var(--font-chalk);
+    font-weight: 700;
+    font-size: 1.55rem;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+</style>

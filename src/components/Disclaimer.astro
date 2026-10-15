@@ -1,0 +1,55 @@
+---
+// Avertissement (contenu financier, « YMYL ») et transparence sur l'usage de l'IA.
+import Icon from './Icon.astro';
+import { href } from '../lib/url.ts';
+
+interface Props {
+  /** Variante pour les calculateurs */
+  tool?: boolean;
+  ai?: boolean;
+}
+
+const { tool = false, ai = true } = Astro.props;
+---
+
+<div class="disclaimer">
+  <aside class="callout callout--warning" aria-label="Avertissement">
+    <Icon name="alert" size={22} />
+    <p>
+      <strong>Contenu pédagogique, pas un conseil personnalisé.</strong>
+      {
+        tool
+          ? ' Ce calcul est une estimation fondée sur les valeurs saisies et des formules simplifiées : il ne remplace ni une offre de prêt, ni l’avis d’un professionnel (banque, courtier, notaire, conseiller en investissement).'
+          : ' Les exemples chiffrés sont des cas d’école. Avant de décider, faites étudier votre situation par un professionnel (notaire, expert-comptable, conseiller en investissement financier).'
+      }
+      Tout investissement immobilier comporte des risques : vacance, impayés, travaux, baisse des prix, évolution de la fiscalité, perte en capital. Les performances
+      passées ne préjugent pas des performances futures. <a href={href('/methode/')}>Notre méthode</a>
+    </p>
+  </aside>
+  {
+    ai && (
+      <p class="disclaimer__ai">
+        <Icon name="sparkles" size={16} /> Illustrations et voix générées avec l’aide de l’IA ; contenu vérifié et sourcé.
+      </p>
+    )
+  }
+</div>
+
+<style>
+  .disclaimer {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .disclaimer__ai {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--ink-mute);
+    font-size: var(--text-xs);
+  }
+
+  .disclaimer__ai :global(svg) {
+    color: var(--orange-ink);
+  }
+</style>

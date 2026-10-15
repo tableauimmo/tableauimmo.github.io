@@ -1,0 +1,64 @@
+---
+// En-tête des pages intérieures : un tableau noir pleine largeur (fil d'Ariane, annotation à la craie, titre).
+import Breadcrumbs from './Breadcrumbs.astro';
+import type { Crumb } from '../lib/jsonld.ts';
+
+interface Props {
+  crumbs: Crumb[];
+  kicker?: string | undefined;
+  title: string;
+  lead?: string | undefined;
+  /** Titre plus petit (titres longs : épisodes, outils) */
+  compact?: boolean;
+}
+
+const { crumbs, kicker, title, lead, compact = false } = Astro.props;
+---
+
+<header class:list={['page-head', 'board', 'board--ledge', { 'page-head--compact': compact }]}>
+  <div class="container page-head__inner">
+    <Breadcrumbs crumbs={crumbs} />
+    {kicker && <p class="page-head__kicker">{kicker}</p>}
+    <h1 class="page-head__title chalk-title">{title}</h1>
+    {lead && <p class="page-head__lead">{lead}</p>}
+    <slot />
+  </div>
+</header>
+
+<style>
+  .page-head {
+    padding-block: clamp(1.5rem, 1rem + 2vw, 2.25rem) clamp(2.5rem, 1.75rem + 3vw, 3.75rem);
+  }
+
+  .page-head__inner {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .page-head__kicker {
+    margin-top: clamp(0.75rem, 0.5rem + 1vw, 1.5rem);
+    color: var(--yellow);
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: var(--text-lg);
+    line-height: 1.2;
+  }
+
+  .page-head__title {
+    max-width: 22ch;
+    font-size: var(--text-display);
+    color: var(--chalk);
+  }
+
+  .page-head--compact .page-head__title {
+    max-width: 30ch;
+    font-size: clamp(2.1rem, 1.5rem + 2.4vw, 3.4rem);
+  }
+
+  .page-head__lead {
+    max-width: 46rem;
+    color: var(--chalk-soft);
+    font-size: var(--text-lg);
+    line-height: 1.6;
+  }
+</style>

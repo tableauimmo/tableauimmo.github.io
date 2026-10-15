@@ -1,0 +1,48 @@
+---
+// Épisode annoncé (pas encore sur YouTube) : une note papier scotchée.
+import { CATEGORIES } from '../data/categories.ts';
+import type { Episode } from '../lib/episodes.ts';
+
+interface Props {
+  episode: Episode;
+}
+
+const { episode } = Astro.props;
+const { data } = episode;
+---
+
+<article class="upcoming note note--tilt-r">
+  <p class="upcoming__label">Bientôt sur YouTube · Épisode {data.number}</p>
+  <h3 class="upcoming__title">{data.title}</h3>
+  <p class="upcoming__teaser">{data.teaser}</p>
+  <p class="upcoming__theme">Thème : {CATEGORIES[data.category].label}</p>
+</article>
+
+<style>
+  .upcoming {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .upcoming__label {
+    color: var(--orange-ink);
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .upcoming__title {
+    font-size: 1.25rem;
+  }
+
+  .upcoming__teaser {
+    color: var(--ink-soft);
+    font-size: var(--text-sm);
+  }
+
+  .upcoming__theme {
+    color: var(--ink-mute);
+    font-size: var(--text-xs);
+    font-weight: 650;
+  }
+</style>

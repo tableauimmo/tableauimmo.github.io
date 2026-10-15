@@ -1,0 +1,217 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
+import { SITE } from '../../../site.config.mjs';
+import { CATEGORIES } from '../../data/categories.ts';
+import { collator, initialOf } from '../../lib/format.ts';
+import { definedTermSetNode } from '../../lib/jsonld.ts';
+import { ogImage } from '../../lib/social.ts';
+import { absoluteUrl, href } from '../../lib/url.ts';
+
+const terms = (await getCollection('lexique')).sort((a, b) => collator.compare(a.data.term, b.data.term));
+const groups = new Map<string, typeof terms>();
+for (const term of terms) {
+  const letter = initialOf(term.data.term);
+  groups.set(letter, [...(groups.get(letter) ?? []), term]);
+}
+const description = `Le lexique de l’investissement immobilier : ${terms.length} définitions courtes et sourcées (LMNP, SCI, déficit foncier, HCSF, DPE, PTZ…), mises à jour.`;
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: 'Lexique', path: '/lexique/' },
+];
+const jsonLd = [
+  definedTermSetNode(
+    terms.map((term) => ({ term: term.data.term, expansion: term.data.expansion, definition: term.data.definition, pageUrl: absoluteUrl(`/lexique/${term.id}/`), aliases: term.data.aliases })),
+    description,
+  ),
+];
+---
+
+<BaseLayout title="Lexique de l’investissement immobilier" description={description} path="/lexique/" image={ogImage('lexique', `Le lexique de ${SITE.name}`)} crumbs={crumbs} jsonLd={jsonLd}>
+  <PageHead
+    crumbs={crumbs}
+    kicker={`${terms.length} définitions, sources officielles à l’appui`}
+    title="Le lexique"
+    lead="Les mots de l’investissement immobilier, expliqués simplement : une phrase pour comprendre, une page pour approfondir, et la date de la dernière vérification."
+  />
+
+  <section class="section lexicon">
+    <div class="container">
+      <div class="lexicon__tools">
+        <label class="lexicon__search" for="lexicon-filter">
+          <span class="visually-hidden">Filtrer les termes</span>
+          <input id="lexicon-filter" type="search" placeholder="Filtrer : SCI, plus-value, DPE…" autocomplete="off" data-lexicon-filter hidden />
+        </label>
+        <nav class="lexicon__letters" aria-label="Lettres">
+          {[...groups.keys()].map((letter) => <a href={`#lettre-${letter}`}>{letter}</a>)}
+        </nav>
+      </div>
+      <p class="lexicon__empty" data-lexicon-empty hidden>Aucun terme ne correspond. Essayez un autre mot.</p>
+
+      {
+        [...groups.entries()].map(([letter, list]) => (
+          <section class="lexicon__group" aria-labelledby={`lettre-${letter}`} data-lexicon-group>
+            <h2 id={`lettre-${letter}`} class="lexicon__letter">
+              {letter}
+            </h2>
+            <dl class="lexicon__list">
+              {list.map((term) => (
+                <div class="lexicon__item" data-lexicon-item data-search={[term.data.term, term.data.expansion ?? '', ...term.data.aliases, term.data.definition].join(' ')}>
+                  <dt>
+                    <a href={href(`/lexique/${term.id}/`)}>{term.data.term}</a>
+                    {term.data.expansion && <span class="lexicon__expansion">{term.data.expansion}</span>}
+                  </dt>
+                  <dd>
+                    {term.data.definition}
+                    <span class="lexicon__cat">{CATEGORIES[term.data.category].label}</span>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  // Filtre instantané (amélioration progressive : sans JavaScript, la liste complète reste affichée).
+  const input = document.querySelector<HTMLInputElement>('[data-lexicon-filter]');
+  const items = [...document.querySelectorAll<HTMLElement>('[data-lexicon-item]')];
+  const groups = [...document.querySelectorAll<HTMLElement>('[data-lexicon-group]')];
+  const empty = document.querySelector<HTMLElement>('[data-lexicon-empty]');
+  const normalize = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+
+  if (input) {
+    input.hidden = false;
+    input.addEventListener('input', () => {
+      const query = normalize(input.value.trim());
+      let visible = 0;
+      for (const item of items) {
+        const match = !query || normalize(item.dataset.search ?? '').includes(query);
+        item.hidden = !match;
+        if (match) visible += 1;
+      }
+      for (const group of groups) group.hidden = !group.querySelector('[data-lexicon-item]:not([hidden])');
+      if (empty) empty.hidden = visible > 0;
+    });
+  }
+</script>
+
+<style>
+  .lexicon__tools {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    padding: 0.9rem 0;
+    background: var(--bg);
+  }
+
+  .lexicon__search input {
+    width: min(22rem, 100%);
+    padding: 0.65rem 0.9rem;
+    border: 1.5px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--surface);
+    font: inherit;
+    font-size: var(--text-sm);
+  }
+
+  .lexicon__search {
+    flex: 1 1 16rem;
+  }
+
+  .lexicon__letters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .lexicon__letters a {
+    display: grid;
+    place-items: center;
+    min-width: 2.1rem;
+    height: 2.1rem;
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .lexicon__letters a:hover {
+    background: var(--paper);
+  }
+
+  .lexicon__group {
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 1fr);
+    gap: 1rem;
+    padding-block: 1.5rem;
+    border-top: 1px solid var(--line);
+    scroll-margin-top: 5rem;
+  }
+
+  .lexicon__letter {
+    font-family: var(--font-chalk);
+    font-size: 2.6rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--orange-ink);
+  }
+
+  .lexicon__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+    gap: 1.25rem 2rem;
+    margin: 0;
+  }
+
+  .lexicon__item dt a {
+    color: var(--ink);
+    font-weight: 750;
+    font-size: 1.1rem;
+    text-decoration-color: var(--yellow-strong);
+    text-decoration-thickness: 2px;
+  }
+
+  .lexicon__expansion {
+    display: block;
+    color: var(--ink-mute);
+    font-size: var(--text-xs);
+    font-weight: 650;
+  }
+
+  .lexicon__item dd {
+    margin: 0.35rem 0 0;
+    color: var(--ink-soft);
+    font-size: var(--text-sm);
+    line-height: 1.55;
+  }
+
+  .lexicon__cat {
+    display: inline-block;
+    margin-left: 0.35rem;
+    color: var(--orange-ink);
+    font-size: var(--text-xs);
+    font-weight: 700;
+  }
+
+  .lexicon__empty {
+    color: var(--ink-mute);
+    padding: 2rem 0;
+  }
+
+  @media (max-width: 560px) {
+    .lexicon__group {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.5rem;
+    }
+  }
+</style>

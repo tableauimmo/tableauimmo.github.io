@@ -1,0 +1,84 @@
+---
+import TextPage from '../components/TextPage.astro';
+import Icon from '../components/Icon.astro';
+import { SITE } from '../../site.config.mjs';
+import { ogImage } from '../lib/social.ts';
+import { href } from '../lib/url.ts';
+
+const mail = (subject: string) => `mailto:${SITE.contactEmail}?subject=${encodeURIComponent(subject)}`;
+---
+
+<TextPage
+  title="Contact"
+  heading="Contact"
+  kicker="Une question, une erreur, une idée d’épisode ?"
+  description={`Écrire à ${SITE.name} : signaler une erreur, proposer un sujet d’épisode ou une collaboration. Contact par e-mail : ${SITE.contactEmail}.`}
+  path="/contact/"
+  image={ogImage('default', `Contacter ${SITE.name}`)}
+  pageType="ContactPage"
+>
+  <p>
+    Le plus simple est de nous écrire à <a href={`mailto:${SITE.contactEmail}`}><strong>{SITE.contactEmail}</strong></a>. Nous lisons tous les messages ; la
+    réponse peut prendre quelques jours.
+  </p>
+  <div class="contact-grid not-prose">
+    <a class="contact-card" href={mail('Signaler une erreur')}>
+      <Icon name="alert" size={22} />
+      <strong>Signaler une erreur</strong>
+      <span>Une règle a changé, un chiffre est faux ? Indiquez la page et la source : nous corrigeons vite.</span>
+    </a>
+    <a class="contact-card" href={mail('Idée d’épisode')}>
+      <Icon name="sparkles" size={22} />
+      <strong>Proposer un sujet</strong>
+      <span>Une question d’investissement que vous aimeriez voir posée au tableau.</span>
+    </a>
+    <a class="contact-card" href={mail('Presse ou collaboration')}>
+      <Icon name="mail" size={22} />
+      <strong>Presse et collaborations</strong>
+      <span>Toute collaboration éventuelle serait signalée clairement, dans la vidéo comme sur le site.</span>
+    </a>
+  </div>
+  <h2>Ce que nous ne pouvons pas faire</h2>
+  <p>
+    Nous ne donnons <strong>pas de conseil personnalisé</strong> : nous ne pouvons pas vous dire si un bien précis est une bonne affaire, ni quel régime fiscal
+    choisir pour votre situation. Pour cela, adressez-vous à un professionnel (notaire, expert-comptable, conseiller en investissements financiers, courtier).
+    Nos <a href={href('/outils/')}>calculateurs</a> et notre <a href={href('/lexique/')}>lexique</a> peuvent vous aider à préparer ce rendez-vous.
+  </p>
+</TextPage>
+
+<style>
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: 1rem;
+    margin-block: 2rem !important;
+  }
+
+  .contact-card {
+    display: grid;
+    gap: 0.45rem;
+    align-content: start;
+    padding: 1.2rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    color: var(--ink);
+    text-decoration: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .contact-card:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .contact-card :global(svg) {
+    color: var(--orange-ink);
+  }
+
+  .contact-card span {
+    color: var(--ink-soft);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+  }
+</style>

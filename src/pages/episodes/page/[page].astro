@@ -1,0 +1,22 @@
+---
+// Pages 2, 3… de la liste des épisodes (la page 1 est /episodes/).
+import type { GetStaticPaths } from 'astro';
+import EpisodesListing from '../../../components/EpisodesListing.astro';
+import { getPublishedEpisodes, type PublishedEpisode } from '../../../lib/episodes.ts';
+import { EPISODES_PER_PAGE, paginateList, type Page } from '../../../lib/pagination.ts';
+
+export const getStaticPaths = (async () => {
+  const published = await getPublishedEpisodes();
+  const pages = paginateList(published, EPISODES_PER_PAGE);
+  return pages.slice(1).map((page) => ({ params: { page: String(page.number) }, props: { page, total: published.length } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  page: Page<PublishedEpisode>;
+  total: number;
+}
+
+const { page, total } = Astro.props;
+---
+
+<EpisodesListing page={page} upcoming={[]} total={total} />

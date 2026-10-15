@@ -1,0 +1,12 @@
+---
+import EpisodesListing from '../../components/EpisodesListing.astro';
+import { getPublishedEpisodes, getUpcomingEpisodes } from '../../lib/episodes.ts';
+import { EPISODES_PER_PAGE, paginateList } from '../../lib/pagination.ts';
+
+const published = await getPublishedEpisodes();
+const [firstPage] = paginateList(published, EPISODES_PER_PAGE);
+if (!firstPage) throw new Error('La pagination doit toujours produire une première page');
+const upcoming = await getUpcomingEpisodes();
+---
+
+<EpisodesListing page={firstPage} upcoming={upcoming} total={published.length} />

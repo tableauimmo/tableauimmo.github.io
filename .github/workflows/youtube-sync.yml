@@ -1,0 +1,70 @@
+# Synchronisation avec la chaîne YouTube (toutes les heures).
+#
+# Lit le flux public de la chaîne (YOUTUBE.channelId dans site.config.mjs). Quand une vidéo sort, la fiche
+# d'épisode préparée (statut « upcoming », créée avec npm run episode:add) passe en « published » ;
+# le changement est vérifié, enregistré dans le dépôt (auteur « Tableau Immo »), puis le site est redéployé.
+# Tant que YOUTUBE.channelId est vide, le script s'arrête proprement et rien n'est fait.
+#
+# Secret facultatif (Settings → Secrets and variables → Actions) :
+#   YOUTUBE_API_KEY   durée exacte des vidéos
+
+name: Synchronisation YouTube
+
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: synchronisation-youtube
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  synchroniser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      changed: ${{ steps.sync.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Synchronisation avec la chaîne YouTube
+        id: sync
+        run: npm run sync:youtube
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+
+      - name: Vérification des types, du contenu et des tests unitaires
+        if: steps.sync.outputs.changed == 'true'
+        run: npm run check && npm test
+
+      - name: Enregistrement des épisodes publiés
+        if: steps.sync.outputs.changed == 'true'
+        run: |
+          git config user.name "Tableau Immo"
+          git config user.email "tableauimmo@gmail.com"
+          git add src/content/episodes
+          git commit -m "Épisodes : synchronisation avec la chaîne YouTube"
+          git push
+
+  # Un push fait par le jeton du workflow ne déclenche pas les autres workflows : on appelle le déploiement.
+  deployer:
+    needs: synchroniser
+    if: needs.synchroniser.outputs.changed == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: main

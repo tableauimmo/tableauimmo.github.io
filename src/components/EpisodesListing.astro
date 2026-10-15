@@ -1,0 +1,160 @@
+---
+// Liste des épisodes, paginée. Les épisodes annoncés figurent en page 1.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHead from './PageHead.astro';
+import EpisodeCard from './EpisodeCard.astro';
+import UpcomingCard from './UpcomingCard.astro';
+import EmptyEpisodes from './EmptyEpisodes.astro';
+import SocialLinks from './SocialLinks.astro';
+import { SITE } from '../../site.config.mjs';
+import { CATEGORY_LIST, categoryPath } from '../data/categories.ts';
+import { episodePath, type Episode, type PublishedEpisode } from '../lib/episodes.ts';
+import { absoluteUrl, href } from '../lib/url.ts';
+import { itemListNode, seriesNode } from '../lib/jsonld.ts';
+import { episodesPagePath, type Page } from '../lib/pagination.ts';
+import { ogImage } from '../lib/social.ts';
+
+interface Props {
+  page: Page<PublishedEpisode>;
+  upcoming: Episode[];
+  total: number;
+}
+
+const { page, upcoming: allUpcoming, total } = Astro.props;
+const published = page.items;
+const upcoming = page.number === 1 ? allUpcoming : [];
+const path = episodesPagePath(page.number);
+const suffix = page.number > 1 ? ` (page ${page.number})` : '';
+const description = `Tous les épisodes de ${SITE.name} : l’investissement immobilier en France expliqué au tableau, en vidéos de 10 minutes sourcées.${
+  page.number > 1 ? ` Page ${page.number}.` : ''
+}`;
+const jsonLd = [
+  seriesNode({ description: `${SITE.name} : l’investissement immobilier en France expliqué au tableau, en vidéos d’une dizaine de minutes.`, episodeCount: total }),
+  ...(published.length ? [itemListNode(published.map((episode) => ({ name: episode.data.title, url: absoluteUrl(episodePath(episode)) })))] : []),
+];
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: 'Épisodes', path: '/episodes/' },
+  ...(page.number > 1 ? [{ name: `Page ${page.number}`, path }] : []),
+];
+---
+
+<BaseLayout title={`Les épisodes${suffix}`} description={description} path={path} image={ogImage('episodes', `Les épisodes de ${SITE.name}`)} crumbs={crumbs} jsonLd={jsonLd}>
+  <PageHead
+    crumbs={crumbs}
+    kicker="Un sujet, un tableau, dix minutes"
+    title={`Les épisodes${suffix}`}
+    lead="Chaque épisode pose un sujet d’investissement immobilier au tableau : les règles, les chiffres, les pièges, avec les sources officielles et la date de mise à jour."
+  />
+
+  <section class="section">
+    <div class="container">
+      <nav class="themes" aria-label="Parcourir par thème">
+        <span class="themes__label">Par thème :</span>
+        {CATEGORY_LIST.map((category) => <a class="chip" href={href(categoryPath(category.key))}>{category.label}</a>)}
+      </nav>
+
+      {
+        published.length > 0 ? (
+          <div class="grid grid--3">
+            {published.map((episode, index) => (
+              <EpisodeCard episode={episode} headingLevel="h2" eager={index < 3} />
+            ))}
+          </div>
+        ) : (
+          <EmptyEpisodes headingLevel="h2" />
+        )
+      }
+
+      {
+        page.total > 1 && (
+          <nav class="pages" aria-label="Pages des épisodes">
+            {page.number > 1 && (
+              <a href={href(episodesPagePath(page.number - 1))} rel="prev" class="btn btn--light btn--sm">
+                ← Page précédente
+              </a>
+            )}
+            <span class="pages__info">
+              Page {page.number} sur {page.total}
+            </span>
+            {page.number < page.total && (
+              <a href={href(episodesPagePath(page.number + 1))} rel="next" class="btn btn--light btn--sm">
+                Page suivante →
+              </a>
+            )}
+          </nav>
+        )
+      }
+
+      {
+        upcoming.length > 0 && (
+          <section class="upcoming-list" aria-labelledby="upcoming-title">
+            <h2 id="upcoming-title" class="section-title">Bientôt sur YouTube</h2>
+            <div class="grid grid--3">
+              {upcoming.map((episode) => (
+                <UpcomingCard episode={episode} />
+              ))}
+            </div>
+          </section>
+        )
+      }
+
+      <aside class="follow board board-panel" aria-label="Suivre la chaîne">
+        <p class="follow__text">Les épisodes sortent d’abord sur YouTube, avec des extraits courts sur les réseaux.</p>
+        <SocialLinks variant="pills" />
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .themes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .themes__label {
+    color: var(--ink-mute);
+    font-size: var(--text-sm);
+    font-weight: 650;
+    margin-right: 0.25rem;
+  }
+
+  .pages {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+
+  .pages__info {
+    color: var(--ink-soft);
+    font-weight: 650;
+  }
+
+  .upcoming-list {
+    display: grid;
+    gap: 2rem;
+    margin-top: 3.5rem;
+  }
+
+  .follow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    margin-top: 3.5rem;
+    padding: 1.4rem 1.6rem;
+  }
+
+  .follow__text {
+    flex: 1 1 18rem;
+    color: var(--chalk-soft);
+  }
+</style>

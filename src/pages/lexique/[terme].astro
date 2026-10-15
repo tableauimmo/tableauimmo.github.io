@@ -1,0 +1,172 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, getEntries, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
+import Sources from '../../components/Sources.astro';
+import Disclaimer from '../../components/Disclaimer.astro';
+import TermNote from '../../components/TermNote.astro';
+import EpisodeCard from '../../components/EpisodeCard.astro';
+import Icon from '../../components/Icon.astro';
+import { CATEGORIES, categoryPath } from '../../data/categories.ts';
+import { TOOLS, toolPath } from '../../data/tools.ts';
+import { forTerm, getPublishedEpisodes } from '../../lib/episodes.ts';
+import { formatDate, isoDay } from '../../lib/format.ts';
+import { definedTermNode, webPageNode } from '../../lib/jsonld.ts';
+import { ogImage } from '../../lib/social.ts';
+import { absoluteUrl, href } from '../../lib/url.ts';
+
+export const getStaticPaths = (async () => {
+  const terms = await getCollection('lexique');
+  return terms.map((term) => ({ params: { terme: term.id }, props: { term } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  term: CollectionEntry<'lexique'>;
+}
+
+const { term } = Astro.props;
+const { data } = term;
+const { Content } = await render(term);
+const related = (data.related.length ? await getEntries(data.related) : []) as CollectionEntry<'lexique'>[];
+const episodes = forTerm(await getPublishedEpisodes(), term.id).slice(0, 3);
+const category = CATEGORIES[data.category];
+const path = `/lexique/${term.id}/`;
+const pageUrl = absoluteUrl(path);
+const title = data.expansion ? `${data.term} (${data.expansion}) : définition` : `${data.term} : définition`;
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: 'Lexique', path: '/lexique/' },
+  { name: data.term, path },
+];
+const jsonLd = [
+  definedTermNode({ term: data.term, expansion: data.expansion, definition: data.definition, pageUrl, aliases: data.aliases }),
+  webPageNode({ name: title, description: data.definition, pageUrl, dateModified: data.updatedAt, about: { '@id': `${pageUrl}#terme` } }),
+];
+---
+
+<BaseLayout title={title} description={data.definition} path={path} image={ogImage('lexique', `${data.term} — lexique de Tableau Immo`)} crumbs={crumbs} jsonLd={jsonLd} type="article" modified={data.updatedAt}>
+  <PageHead crumbs={crumbs} kicker={`Lexique · ${category.label}`} title={data.term} lead={data.expansion} />
+
+  <div class="container content-layout term">
+    <article class="content-main">
+      <section class="term__short note note--tilt-l" aria-labelledby="en-une-phrase">
+        <h2 id="en-une-phrase" class="note__title">En une phrase</h2>
+        <p class="term__definition">{data.definition}</p>
+      </section>
+
+      {
+        data.watch && (
+          <aside class="callout callout--warning" aria-label="Règle en évolution">
+            <Icon name="alert" size={22} />
+            <p>
+              <strong>À surveiller (au {formatDate(data.watch.date)}).</strong> {data.watch.note}
+            </p>
+          </aside>
+        )
+      }
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      <p class="term__updated">
+        <Icon name="refresh" size={16} /> Définition vérifiée le <time datetime={isoDay(data.updatedAt)}>{formatDate(data.updatedAt)}</time>
+      </p>
+
+      <Sources sources={data.sources} />
+
+      {
+        episodes.length > 0 && (
+          <section aria-labelledby="term-episodes">
+            <h2 id="term-episodes" class="block-title">
+              Les épisodes qui en parlent
+            </h2>
+            <div class="grid grid--2">
+              {episodes.map((episode) => (
+                <EpisodeCard episode={episode} />
+              ))}
+            </div>
+          </section>
+        )
+      }
+
+      <Disclaimer ai={false} />
+    </article>
+
+    <aside class="content-side" aria-label="Pour aller plus loin">
+      <div class="side-card">
+        <h2 class="side-card__title">Thème</h2>
+        <ul>
+          <li><a href={href(categoryPath(category.key))}>{category.title}</a></li>
+        </ul>
+      </div>
+      {
+        data.tools.length > 0 && (
+          <div class="side-card">
+            <h2 class="side-card__title">Faire le calcul</h2>
+            <ul>
+              {data.tools.map((tool) => (
+                <li>
+                  <Icon name="calculator" size={15} /> <a href={href(toolPath(tool))}>{TOOLS[tool].name}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+      <div class="side-card">
+        <h2 class="side-card__title">Tout le lexique</h2>
+        <ul>
+          <li><a href={href('/lexique/')}>Les définitions de A à Z</a></li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  {
+    related.length > 0 && (
+      <section class="section section--paper" aria-labelledby="related-terms">
+        <div class="container">
+          <h2 id="related-terms" class="section-title term__related-title">
+            Termes liés
+          </h2>
+          <div class="grid grid--3 term__related">
+            {related.map((other, index) => (
+              <TermNote term={other} tilt={index % 2 ? 'r' : 'l'} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .term {
+    padding-block: clamp(2.25rem, 1.75rem + 2vw, 3.25rem) clamp(3rem, 2rem + 3vw, 4.5rem);
+  }
+
+  .term__definition {
+    margin-top: 0.6rem;
+    font-size: var(--text-lg);
+    line-height: 1.55;
+  }
+
+  .term__updated {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--ink-mute);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .term__related-title {
+    margin-bottom: 2rem;
+  }
+
+  .term__related {
+    row-gap: 2.25rem;
+  }
+</style>

@@ -1,0 +1,373 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getEntries, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
+import YouTubeFacade from '../../components/YouTubeFacade.astro';
+import KeyTakeaways from '../../components/KeyTakeaways.astro';
+import ChalkTable from '../../components/ChalkTable.astro';
+import Faq from '../../components/Faq.astro';
+import Sources from '../../components/Sources.astro';
+import Disclaimer from '../../components/Disclaimer.astro';
+import EpisodeCard from '../../components/EpisodeCard.astro';
+import Icon from '../../components/Icon.astro';
+import { SITE, YOUTUBE } from '../../../site.config.mjs';
+import { CATEGORIES, categoryPath } from '../../data/categories.ts';
+import { TOOLS, toolPath } from '../../data/tools.ts';
+import { episodePath, getPublishedEpisodes, lastUpdated, neighbours, relatedEpisodes, type PublishedEpisode } from '../../lib/episodes.ts';
+import { faqNode, seriesNode, videoNode } from '../../lib/jsonld.ts';
+import { formatDate, isoDay } from '../../lib/format.ts';
+import { thumbnailImage, type SocialImage } from '../../lib/social.ts';
+import { absoluteUrl, href } from '../../lib/url.ts';
+import { durationToSeconds, embedUrl, formatDuration, timestampToSeconds, watchUrl, youtubeThumbnailUrl } from '../../lib/youtube.ts';
+
+export const getStaticPaths = (async () => {
+  const episodes = await getPublishedEpisodes();
+  return episodes.map((episode) => ({ params: { slug: episode.data.slug }, props: { episode, all: episodes } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  episode: PublishedEpisode;
+  all: PublishedEpisode[];
+}
+
+const { episode, all } = Astro.props;
+const { data } = episode;
+const { Content } = await render(episode);
+const category = CATEGORIES[data.category];
+const terms = (data.terms.length ? await getEntries(data.terms.map((id) => ({ collection: 'lexique' as const, id }))) : []) as CollectionEntry<'lexique'>[];
+const { previous, next } = neighbours(all, episode);
+const related = relatedEpisodes(all, episode, 3);
+const updated = lastUpdated(episode);
+
+const path = episodePath(episode);
+const pageUrl = absoluteUrl(path);
+const alt = `${data.title} — épisode ${data.number} de ${SITE.name}`;
+const image: SocialImage = data.thumbnail
+  ? await thumbnailImage(data.thumbnail, alt)
+  : { url: youtubeThumbnailUrl(data.youtubeId), width: 480, height: 360, alt };
+const durationSeconds = data.duration ? durationToSeconds(data.duration) : undefined;
+const chapters = data.chapters.map((chapter, index) => {
+  const start = timestampToSeconds(chapter.t);
+  const nextChapter = data.chapters[index + 1];
+  const end = nextChapter ? timestampToSeconds(nextChapter.t) : (durationSeconds ?? start + 1);
+  return { ...chapter, start, end, url: `${pageUrl}?t=${start}` };
+});
+
+const jsonLd = [
+  seriesNode({ description: `${SITE.name} : l’investissement immobilier en France expliqué au tableau, en vidéos d’une dizaine de minutes.`, episodeCount: all.length }),
+  videoNode({
+    name: data.title,
+    description: data.summary,
+    pageUrl,
+    thumbnailUrl: absoluteUrl(image.url),
+    uploadDate: data.publishedAt,
+    dateModified: updated,
+    youtubeId: data.youtubeId,
+    embedUrl: embedUrl(data.youtubeId),
+    duration: data.duration,
+    episodeNumber: data.number,
+    keywords: [category.label, ...data.tags],
+    about: category.title,
+    chapters,
+  }),
+  ...(data.faq.length ? [faqNode(data.faq, pageUrl)] : []),
+];
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: 'Épisodes', path: '/episodes/' },
+  { name: data.title, path },
+];
+---
+
+<BaseLayout
+  title={data.title}
+  description={data.summary}
+  path={path}
+  image={image}
+  type="video.episode"
+  video={{ embedUrl: embedUrl(data.youtubeId), durationSeconds, releaseDate: data.publishedAt }}
+  crumbs={crumbs}
+  jsonLd={jsonLd}
+  modified={updated}
+>
+  <PageHead crumbs={crumbs} kicker={`Épisode ${data.number} · ${category.label}`} title={data.title} lead={data.summary} compact>
+    <ul class="meta-line episode__meta">
+      <li><Icon name="calendar" size={16} /> Publié le <time datetime={isoDay(data.publishedAt)}>{formatDate(data.publishedAt)}</time></li>
+      <li class="episode__updated-chip"><Icon name="refresh" size={16} /> Mis à jour le <time datetime={isoDay(updated)}>{formatDate(updated)}</time></li>
+      {data.duration && <li><Icon name="clock" size={16} /> {formatDuration(data.duration)}</li>}
+    </ul>
+  </PageHead>
+
+  <article class="episode">
+    <div class="container episode__video">
+      <YouTubeFacade youtubeId={data.youtubeId} title={data.title} thumbnail={data.thumbnail} duration={data.duration ? formatDuration(data.duration) : undefined} />
+    </div>
+
+    <div class="container content-layout episode__layout">
+      <div class="content-main">
+        <KeyTakeaways items={data.keyTakeaways} />
+
+        <section aria-labelledby="tableau-title">
+          <h2 id="tableau-title" class="block-title">Le tableau de l’épisode</h2>
+          <ChalkTable tableau={data.tableau} />
+        </section>
+
+        {
+          chapters.length > 0 && (
+            <section aria-labelledby="chapitres-title">
+              <h2 id="chapitres-title" class="block-title">Les chapitres</h2>
+              <ol class="chapters">
+                {chapters.map((chapter) => (
+                  <li>
+                    <a href={`?t=${chapter.start}`} data-seek={chapter.start}>
+                      <span class="chapters__time">{chapter.t}</span>
+                      <span>{chapter.title}</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )
+        }
+
+        <div class="prose episode__article">
+          <Content />
+        </div>
+
+        {data.faq.length > 0 && <Faq items={data.faq} />}
+        <Sources sources={data.sources} />
+        <Disclaimer />
+      </div>
+
+      <aside class="content-side" aria-label="Autour de l’épisode">
+        <div class="side-card">
+          <h2 class="side-card__title">Dans cet épisode</h2>
+          <ul>
+            <li>Thème : <a href={href(categoryPath(category.key))}>{category.label}</a></li>
+            {
+              data.tools.map((tool) => (
+                <li>
+                  <Icon name="calculator" size={15} /> <a href={href(toolPath(tool))}>{TOOLS[tool].name}</a>
+                </li>
+              ))
+            }
+          </ul>
+          {
+            terms.length > 0 && (
+              <>
+                <h3 class="side-card__subtitle">Les mots de l’épisode</h3>
+                <p class="episode__terms">
+                  {terms.map((term) => (
+                    <a class="chip" href={href(`/lexique/${term.id}/`)}>
+                      {term.data.term}
+                    </a>
+                  ))}
+                </p>
+              </>
+            )
+          }
+          {data.tags.length > 0 && <p class="episode__tags">{data.tags.map((tag) => `#${tag}`).join(' ')}</p>}
+        </div>
+
+        {
+          data.shorts && data.shorts.length > 0 && (
+            <div class="side-card">
+              <h2 class="side-card__title">En format court</h2>
+              <ul>
+                {data.shorts.map((short) => (
+                  <li>
+                    <a href={short.url} rel="noopener" target="_blank">
+                      {short.title ?? `Extrait sur ${short.platform}`}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+
+        <div class="side-card side-card--board board">
+          <h2 class="side-card__title">Ne ratez pas le prochain</h2>
+          <p>Un nouvel épisode, un nouveau tableau. Gratuit, sans pub sur ce site.</p>
+          <a href={YOUTUBE.subscribeUrl} class="btn btn--primary btn--sm" rel="noopener" target="_blank"><Icon name="youtube" size={18} /> <span>S’abonner</span></a>
+          <a href={watchUrl(data.youtubeId)} class="episode__yt" rel="noopener" target="_blank">Commenter sur YouTube</a>
+        </div>
+      </aside>
+    </div>
+
+    {
+      (previous || next) && (
+        <nav class="container pager" aria-label="Épisodes précédent et suivant">
+          {previous ? (
+            <a href={href(episodePath(previous))} class="pager__link">
+              <small>← Épisode précédent</small>
+              <strong>{previous.data.title}</strong>
+            </a>
+          ) : (
+            <span />
+          )}
+          {next && (
+            <a href={href(episodePath(next))} class="pager__link pager__link--next">
+              <small>Épisode suivant →</small>
+              <strong>{next.data.title}</strong>
+            </a>
+          )}
+        </nav>
+      )
+    }
+  </article>
+
+  {
+    related.length > 0 && (
+      <section class="section section--paper" aria-labelledby="related-title">
+        <div class="container">
+          <h2 id="related-title" class="section-title related-title">À voir ensuite</h2>
+          <div class="grid grid--3">
+            {related.map((other) => (
+              <EpisodeCard episode={other} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .episode__meta {
+    margin-top: 0.4rem;
+    list-style: none;
+    padding: 0;
+  }
+
+  .episode__updated-chip {
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    background: rgb(242 212 92 / 0.14);
+    color: var(--yellow);
+    font-weight: 650;
+  }
+
+  .episode__video {
+    max-width: calc(66rem + 2 * var(--gutter));
+    margin-top: clamp(1.75rem, 1rem + 2vw, 2.75rem);
+  }
+
+  .episode__layout {
+    margin-block: clamp(2.5rem, 2rem + 2vw, 3.5rem) clamp(3rem, 2rem + 3vw, 4.5rem);
+  }
+
+  .chapters {
+    display: grid;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+
+  .chapters a {
+    display: grid;
+    grid-template-columns: 4.2rem minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.65rem 0.5rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .chapters a:hover {
+    background: var(--surface);
+  }
+
+  .chapters__time {
+    color: var(--orange-ink);
+    font-variant-numeric: tabular-nums;
+    font-weight: 750;
+  }
+
+  .side-card__subtitle {
+    margin: 1.1rem 0 0.6rem;
+    font-size: var(--text-sm);
+    font-weight: 750;
+  }
+
+  .episode__terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .episode__tags {
+    margin-top: 1rem;
+    color: var(--ink-mute);
+    font-size: var(--text-xs);
+  }
+
+  .side-card--board {
+    background-color: var(--slate);
+    background-image: var(--chalk-grain), linear-gradient(180deg, var(--slate-2), var(--slate));
+    display: grid;
+    gap: 0.75rem;
+    justify-items: start;
+    border: 0;
+    color: var(--chalk-soft);
+    font-size: var(--text-sm);
+  }
+
+  .side-card--board .side-card__title {
+    margin: 0;
+    color: var(--chalk);
+    font-family: var(--font-hand);
+    font-size: 1.3rem;
+  }
+
+  .episode__yt {
+    color: var(--chalk-soft);
+    font-size: var(--text-xs);
+  }
+
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: clamp(3rem, 2rem + 3vw, 4.5rem);
+  }
+
+  .pager__link {
+    display: grid;
+    gap: 0.2rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .pager__link:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .pager__link small {
+    color: var(--ink-mute);
+    font-weight: 650;
+  }
+
+  .pager__link--next {
+    text-align: right;
+  }
+
+  .related-title {
+    margin-bottom: 1.75rem;
+  }
+
+  @media (max-width: 560px) {
+    .pager {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

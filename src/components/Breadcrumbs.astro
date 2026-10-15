@@ -1,0 +1,67 @@
+---
+import type { Crumb } from '../lib/jsonld.ts';
+import { href } from '../lib/url.ts';
+
+interface Props {
+  crumbs: Crumb[];
+}
+
+const { crumbs } = Astro.props;
+---
+
+<nav class="breadcrumbs" aria-label="Fil d’Ariane">
+  <ol>
+    {
+      crumbs.map((crumb, index) => (
+        <li>
+          {index < crumbs.length - 1 ? <a href={href(crumb.path)}>{crumb.name}</a> : <span aria-current="page">{crumb.name}</span>}
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<style>
+  ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-xs);
+    color: var(--chalk-mute);
+  }
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  li + li::before {
+    content: '/';
+    color: rgb(237 237 230 / 0.35);
+  }
+
+  a {
+    color: var(--chalk-soft);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  a:hover {
+    color: var(--chalk);
+    text-decoration: underline;
+  }
+
+  [aria-current='page'] {
+    color: var(--chalk-mute);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 22rem;
+  }
+</style>

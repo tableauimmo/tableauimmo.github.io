@@ -1,0 +1,62 @@
+---
+// Les 6 réseaux de la chaîne (adresses dans site.config.mjs).
+import Icon from './Icon.astro';
+import { SOCIAL } from '../../site.config.mjs';
+
+interface Props {
+  variant?: 'icons' | 'pills';
+  label?: string;
+}
+
+const { variant = 'icons', label = 'Tableau Immo sur les réseaux' } = Astro.props;
+---
+
+<ul class:list={['social', `social--${variant}`]} aria-label={label}>
+  {
+    SOCIAL.map((network) => (
+      <li>
+        <a href={network.url} rel="noopener me" target="_blank" class="social__link" data-network={network.id} aria-label={variant === 'icons' ? `${network.label} (nouvel onglet)` : undefined}>
+          <Icon name={network.id as 'youtube'} size={variant === 'icons' ? 20 : 18} />
+          {variant === 'pills' && <span>{network.label}</span>}
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .social__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    border-radius: 999px;
+    border: 1px solid rgb(237 237 230 / 0.28);
+    color: var(--chalk);
+    text-decoration: none;
+    transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+  }
+
+  .social__link:hover {
+    border-color: var(--yellow);
+    color: var(--yellow);
+    background: rgb(242 212 92 / 0.06);
+  }
+
+  .social--pills .social__link {
+    padding: 0.4rem 0.95rem 0.4rem 0.8rem;
+    font-size: var(--text-sm);
+    font-weight: 650;
+  }
+</style>

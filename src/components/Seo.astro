@@ -1,0 +1,79 @@
+---
+import { SITE } from '../../site.config.mjs';
+import { serializeGraph, type JsonLdNode } from '../lib/jsonld.ts';
+import { pageTitle } from '../lib/format.ts';
+import { absoluteUrl } from '../lib/url.ts';
+import type { SocialImage } from '../lib/social.ts';
+
+export interface SeoProps {
+  title: string;
+  description: string;
+  /** Chemin canonique logique (sans le chemin de base), avec barre finale, ex. « /episodes/ » */
+  path: string;
+  image: SocialImage;
+  type?: 'website' | 'video.episode' | 'article';
+  noindex?: boolean;
+  jsonLd?: JsonLdNode[];
+  video?: { embedUrl: string; durationSeconds?: number | undefined; releaseDate: Date };
+  /** Date de dernière mise à jour (articles) */
+  modified?: Date | undefined;
+}
+
+type Props = SeoProps;
+
+const { title, description, path, image, type = 'website', noindex = false, jsonLd = [], video, modified } = Astro.props;
+
+if (!path.startsWith('/') || !path.endsWith('/')) {
+  throw new Error(`Chemin canonique invalide « ${path} » : il doit commencer et finir par « / »`);
+}
+// Google tronque au-delà de ~160 caractères ; trop courte, la description est souvent remplacée.
+const DESCRIPTION_MIN = 70;
+const DESCRIPTION_MAX = 160;
+if (description.length < DESCRIPTION_MIN || description.length > DESCRIPTION_MAX) {
+  throw new Error(`Description de ${path} : ${description.length} caractères (attendu ${DESCRIPTION_MIN} à ${DESCRIPTION_MAX})`);
+}
+
+const fullTitle = pageTitle(title);
+const canonical = absoluteUrl(path);
+const imageUrl = absoluteUrl(image.url);
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-video-preview:-1, max-snippet:-1'} />
+<link rel="alternate" hreflang="fr" href={canonical} />
+<link rel="alternate" hreflang="x-default" href={canonical} />
+
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:locale" content="fr_FR" />
+<meta property="og:type" content={type} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={imageUrl} />
+<meta property="og:image:width" content={String(image.width)} />
+<meta property="og:image:height" content={String(image.height)} />
+<meta property="og:image:alt" content={image.alt} />
+{modified && <meta property="article:modified_time" content={modified.toISOString()} />}
+{
+  video && (
+    <>
+      <meta property="og:video" content={video.embedUrl} />
+      <meta property="og:video:secure_url" content={video.embedUrl} />
+      <meta property="og:video:type" content="text/html" />
+      <meta property="og:video:width" content="1280" />
+      <meta property="og:video:height" content="720" />
+      {video.durationSeconds !== undefined && <meta property="video:duration" content={String(video.durationSeconds)} />}
+      <meta property="video:release_date" content={video.releaseDate.toISOString()} />
+    </>
+  )
+}
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageUrl} />
+<meta name="twitter:image:alt" content={image.alt} />
+
+{jsonLd.length > 0 && <script is:inline type="application/ld+json" set:html={serializeGraph(jsonLd)} />}

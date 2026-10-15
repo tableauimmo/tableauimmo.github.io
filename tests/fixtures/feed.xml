@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Flux de démonstration pour les tests : reproduit le format du flux public d'une chaîne YouTube.
+     Identifiants fictifs (miniatures locales fournies par les fiches : aucun téléchargement). -->
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom">
+ <link rel="self" href="http://www.youtube.com/feeds/videos.xml?channel_id=UCtableauimmofixture00"/>
+ <id>yt:channel:tableauimmofixture00</id>
+ <title>Tableau Immo</title>
+ <entry>
+  <id>yt:video:TIshort0001</id>
+  <yt:videoId>TIshort0001</yt:videoId>
+  <title>Le piège du rendement brut #shorts</title>
+  <link rel="alternate" href="https://www.youtube.com/shorts/TIshort0001"/>
+  <published>2026-10-15T09:00:00+00:00</published>
+  <media:group>
+   <media:title>Le piège du rendement brut #shorts</media:title>
+   <media:description>Un extrait de l'épisode 1.</media:description>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:TIunknown01</id>
+  <yt:videoId>TIunknown01</yt:videoId>
+  <title>Questions des abonnés : vos chiffres au tableau</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=TIunknown01"/>
+  <published>2026-10-15T08:00:00+00:00</published>
+  <media:group>
+   <media:title>Questions des abonnés</media:title>
+   <media:description>Une vidéo sans fiche préparée : elle ne doit pas créer de page.</media:description>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:TIfixture02</id>
+  <yt:videoId>TIfixture02</yt:videoId>
+  <title>LMNP en 2026 : ce qui change vraiment pour les loueurs en meublé | Tableau Immo</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=TIfixture02"/>
+  <published>2026-10-14T16:00:00+00:00</published>
+  <media:group>
+   <media:title>LMNP en 2026 | Tableau Immo</media:title>
+   <media:description>Seuils du micro-BIC, revente, prélèvements sociaux : le point au tableau.
+▶ Le tableau, les sources et la transcription : https://tableauimmo.github.io/episodes/lmnp-2026-ce-qui-change/
+
+0:00 L'accroche
+0:28 Le micro-BIC en 2026
+3:15 La revente et les amortissements
+6:40 Les prélèvements sociaux
+9:05 La règle à retenir
+
+#LMNP #immobilier #fiscalité</media:description>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:TIfixture01</id>
+  <yt:videoId>TIfixture01</yt:videoId>
+  <title>Rendement brut ou net : le calcul que les annonces oublient | Tableau Immo</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=TIfixture01"/>
+  <published>2026-10-08T16:00:00+00:00</published>
+  <media:group>
+   <media:title>Rendement brut ou net | Tableau Immo</media:title>
+   <media:description>Déjà publié : la fiche ne doit pas changer.</media:description>
+  </media:group>
+ </entry>
+</feed>

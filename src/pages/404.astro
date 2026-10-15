@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { ogImage } from '../lib/social.ts';
+import { href } from '../lib/url.ts';
+---
+
+<BaseLayout title="Page introuvable" description="Cette page a été effacée du tableau, ou n’a jamais existé. Retrouvez les épisodes, les calculateurs et le lexique de Tableau Immo." path="/404/" image={ogImage('default', 'Tableau Immo')} noindex>
+  <section class="lost board board--ledge">
+    <div class="container lost__inner">
+      <p class="lost__code chalk-title" aria-hidden="true">404</p>
+      <svg class="lost__eraser" viewBox="0 0 220 60" aria-hidden="true" focusable="false"><path d="M8 40 C 50 18 90 52 130 30 S 190 20 212 34" /></svg>
+      <h1 class="lost__title chalk-title">Cette page a été effacée du tableau.</h1>
+      <p class="lost__lead">Elle a peut-être changé d’adresse, ou elle n’a jamais existé. Les bonnes pistes :</p>
+      <div class="lost__actions">
+        <a href={href('/')} class="btn btn--primary"><Icon name="house" size={18} /> <span>Accueil</span></a>
+        <a href={href('/episodes/')} class="btn btn--ghost"><Icon name="play" size={18} /> <span>Les épisodes</span></a>
+        <a href={href('/outils/')} class="btn btn--ghost"><Icon name="calculator" size={18} /> <span>Les calculateurs</span></a>
+        <a href={href('/lexique/')} class="btn btn--ghost"><Icon name="book" size={18} /> <span>Le lexique</span></a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .lost {
+    padding-block: clamp(3rem, 2rem + 5vw, 6.5rem);
+  }
+
+  .lost__inner {
+    display: grid;
+    gap: 1.1rem;
+    justify-items: start;
+  }
+
+  .lost__code {
+    font-size: clamp(5rem, 3rem + 8vw, 9rem);
+    color: var(--yellow);
+    line-height: 0.9;
+  }
+
+  .lost__eraser {
+    width: min(18rem, 70%);
+    fill: none;
+    stroke: rgb(237 237 230 / 0.35);
+    stroke-width: 14;
+    stroke-linecap: round;
+  }
+
+  .lost__title {
+    max-width: 20ch;
+    font-size: var(--text-3xl);
+    color: var(--chalk);
+  }
+
+  .lost__lead {
+    color: var(--chalk-soft);
+    font-size: var(--text-lg);
+  }
+
+  .lost__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+</style>

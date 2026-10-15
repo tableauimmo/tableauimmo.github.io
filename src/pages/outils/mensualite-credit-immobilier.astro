@@ -1,0 +1,77 @@
+---
+import ToolPage from '../../components/ToolPage.astro';
+import { TOOLS } from '../../data/tools.ts';
+import { href } from '../../lib/url.ts';
+import { creditTool } from '../../tools/credit/tool.ts';
+
+const faq = [
+  {
+    q: 'Pourquoi paie-t-on surtout des intérêts au début du prêt ?',
+    a: 'Avec des mensualités constantes, les intérêts de chaque mois sont calculés sur le capital restant dû. Au début, ce capital est maximal : les intérêts pèsent lourd et le capital remboursé est faible. Plus le prêt avance, plus la part de capital augmente.',
+  },
+  {
+    q: 'Le calcul tient-il compte des frais de dossier, de garantie ou de courtage ?',
+    a: 'Non. Le calculateur donne la mensualité et le coût des intérêts et de l’assurance. Les frais de dossier, de garantie (caution ou hypothèque) et de courtage s’ajoutent au coût du crédit : ils figurent dans le TAEG de l’offre de prêt.',
+  },
+  {
+    q: 'Quelle différence entre le taux nominal et le TAEG ?',
+    a: 'Le taux nominal sert à calculer les intérêts. Le TAEG (taux annuel effectif global) ajoute tous les frais obligatoires du crédit : assurance exigée, frais de dossier, garantie, courtage. C’est lui qu’il faut comparer d’une offre à l’autre ; il ne peut pas dépasser le taux d’usure publié par la Banque de France.',
+  },
+  {
+    q: 'Peut-on changer d’assurance emprunteur en cours de prêt ?',
+    a: 'Oui. Depuis la loi du 28 février 2022, l’assurance d’un crédit immobilier peut être résiliée à tout moment, sans frais, à condition que le nouveau contrat offre des garanties équivalentes à celles exigées par la banque.',
+  },
+];
+
+const sources = [
+  { title: 'Crédit immobilier : comment ça marche ? — economie.gouv.fr', url: 'https://www.economie.gouv.fr/particuliers/gerer-mon-argent/emprunter-et-sassurer/credit-immobilier-comment-ca-marche', date: new Date('2026-10-15') },
+  { title: 'À quoi correspond le taux annuel effectif global (TAEG) ? — economie.gouv.fr', url: 'https://www.economie.gouv.fr/particuliers/emprunter-et-sassurer/credit-quoi-correspond-le-taux-annuel-effectif-global-taeg', date: new Date('2026-10-15') },
+  { title: 'Changer d’assurance emprunteur — economie.gouv.fr', url: 'https://www.economie.gouv.fr/particuliers/emprunter-et-sassurer/achat-immobilier-pouvez-vous-changer-dassurance-emprunteur', date: new Date('2026-10-15') },
+  { title: 'Taux d’usure — Banque de France', url: 'https://www.banque-france.fr/statistiques/taux-et-cours/taux-dusure', date: new Date('2026-10-15') },
+];
+---
+
+<ToolPage
+  info={TOOLS.credit}
+  tool={creditTool}
+  lead="Entrez le montant, le taux, la durée et l’assurance : le tableau affiche la mensualité, le coût total du crédit et l’amortissement année par année, formules à l’appui."
+  faq={faq}
+  sources={sources}
+  updated={new Date('2026-10-15')}
+  terms={['apport', 'taux-d-endettement', 'hcsf', 'effet-de-levier']}
+>
+  <h2>Comment la mensualité est calculée</h2>
+  <p>
+    Un crédit immobilier classique est remboursé par <strong>mensualités constantes</strong> (on parle d’amortissement « à la française »). La mensualité hors
+    assurance suit une formule unique :
+  </p>
+  <p class="formula-static"><span class="hand">M = C × t ÷ (1 − (1 + t)<sup>−n</sup>)</span></p>
+  <ul>
+    <li><strong>C</strong> : le capital emprunté ;</li>
+    <li><strong>t</strong> : le taux mensuel, c’est-à-dire le taux nominal annuel divisé par 12 (3,5 % par an donne 0,2917 % par mois) ;</li>
+    <li><strong>n</strong> : le nombre de mensualités (20 ans = 240 mois).</li>
+  </ul>
+  <p>
+    Chaque mois, les intérêts sont calculés sur le capital restant dû ; le reste de la mensualité rembourse le capital. Le tableau d’amortissement montre cette
+    bascule : beaucoup d’intérêts au début, beaucoup de capital à la fin.
+  </p>
+  <h2>L’assurance emprunteur</h2>
+  <p>
+    Ici, l’assurance est calculée comme dans la plupart des contrats « groupe » des banques : un taux annuel appliqué au <strong>capital initial</strong>, donc
+    une cotisation fixe chaque mois. Certains contrats individuels la calculent sur le capital restant dû : elle baisse alors avec le temps. Pour un emprunteur
+    jeune et en bonne santé, l’écart entre contrats peut représenter plusieurs milliers d’euros sur la durée du prêt.
+  </p>
+  <h2>Ce que ce calcul ne dit pas</h2>
+  <p>
+    La mensualité n’est qu’une partie du coût. S’y ajoutent les frais de dossier, la garantie, le courtage éventuel, et surtout les frais d’achat (frais de
+    notaire). Pour savoir si vous pouvez obtenir ce prêt, voyez le <a href={href('/outils/capacite-emprunt/')}>calculateur de capacité d’emprunt</a> ; pour
+    savoir si un bien locatif le rembourse, le <a href={href('/outils/cash-flow-immobilier/')}>calculateur de cash-flow</a>.
+  </p>
+</ToolPage>
+
+<script>
+  import { mountTool } from '../../tools/shared/ui.ts';
+  import { creditTool } from '../../tools/credit/tool.ts';
+
+  mountTool(creditTool);
+</script>

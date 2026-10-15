@@ -1,0 +1,9 @@
+{
+  "searchConsoleProperty": "https://tableauimmo.github.io/",
+  "indexNowKey": "eb812ec57786993cc265c5bb9c1acaa4",
+  "performancePaths": ["/", "/outils/mensualite-credit-immobilier/", "/lexique/lmnp/"],
+  "maxCrawlPages": 1000,
+  "maxLinkChecks": 300,
+  "maxSuggestionSeeds": 12,
+  "maxUrlInspections": 60
+}

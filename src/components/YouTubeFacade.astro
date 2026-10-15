@@ -1,0 +1,183 @@
+---
+// Lecteur vidéo léger : une vignette et un bouton (aucune requête vers YouTube avant le clic),
+// puis le lecteur « sans cookies » youtube-nocookie.com. Sans JavaScript, le lien ouvre YouTube.
+// VIDEO_EMBED = 'iframe' (site.config.mjs) charge le lecteur dès l'ouverture de la page.
+// Les liens [data-seek] (chapitres) et l'adresse ?t=90 démarrent la vidéo à l'instant voulu.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Icon from './Icon.astro';
+import { VIDEO_EMBED } from '../../site.config.mjs';
+import { embedUrl, watchUrl, youtubeThumbnailUrl } from '../lib/youtube.ts';
+
+interface Props {
+  youtubeId: string;
+  title: string;
+  thumbnail?: ImageMetadata | undefined;
+  duration?: string | undefined;
+}
+
+const { youtubeId, title, thumbnail, duration } = Astro.props;
+const iframeMode = (VIDEO_EMBED as string) === 'iframe';
+---
+
+<div class="video" data-video data-youtube-id={youtubeId} data-title={title} data-embed={embedUrl(youtubeId)}>
+  {
+    iframeMode ? (
+      <iframe
+        src={embedUrl(youtubeId)}
+        title={title}
+        width="1280"
+        height="720"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen
+      />
+    ) : (
+      <a href={watchUrl(youtubeId)} class="video__facade" data-video-facade rel="noopener" target="_blank">
+        {thumbnail ? (
+          <Image src={thumbnail} alt="" widths={[640, 960, 1280]} sizes="(min-width: 1200px) 1100px, 100vw" loading="eager" fetchpriority="high" class="video__thumb" />
+        ) : (
+          <img src={youtubeThumbnailUrl(youtubeId)} alt="" width="480" height="360" class="video__thumb" loading="eager" />
+        )}
+        <span class="video__shade" aria-hidden="true" />
+        <span class="video__button" aria-hidden="true">
+          <Icon name="play" size={34} />
+        </span>
+        <span class="video__hint">
+          Lire la vidéo{duration ? ` · ${duration}` : ''}
+          <span class="visually-hidden"> : « {title} »</span>
+        </span>
+      </a>
+    )
+  }
+</div>
+<p class="video__privacy">
+  Lecteur YouTube en mode confidentialité renforcée (youtube-nocookie.com), chargé seulement au clic. <a href={watchUrl(youtubeId)} rel="noopener" target="_blank"
+    >Voir sur YouTube</a
+  >
+</p>
+
+<script>
+  const box = document.querySelector<HTMLElement>('[data-video]');
+
+  function play(seconds = 0, autoplay = true): void {
+    if (!box?.dataset.embed) return;
+    const url = new URL(box.dataset.embed);
+    if (seconds > 0) url.searchParams.set('start', String(Math.floor(seconds)));
+    if (autoplay) url.searchParams.set('autoplay', '1');
+    let frame = box.querySelector('iframe');
+    if (!frame) {
+      frame = document.createElement('iframe');
+      frame.title = box.dataset.title ?? 'Vidéo';
+      frame.width = '1280';
+      frame.height = '720';
+      frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      frame.referrerPolicy = 'strict-origin-when-cross-origin';
+      frame.allowFullscreen = true;
+      box.replaceChildren(frame);
+    }
+    frame.src = url.href;
+    if (autoplay) frame.focus();
+  }
+
+  box?.querySelector('[data-video-facade]')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    play(0, true);
+  });
+
+  const start = Number(new URLSearchParams(window.location.search).get('t'));
+  if (start > 0) play(start, false);
+
+  document.addEventListener('click', (event) => {
+    const link = (event.target as Element | null)?.closest<HTMLAnchorElement>('a[data-seek]');
+    if (!link || !box) return;
+    event.preventDefault();
+    play(Number(link.dataset.seek), true);
+    history.replaceState(null, '', link.href);
+    box.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+  });
+</script>
+
+<style>
+  .video {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--slate-deep);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .video :global(iframe) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .video__facade {
+    position: absolute;
+    inset: 0;
+    display: block;
+    color: var(--chalk);
+  }
+
+  .video__thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .video__shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 55%, rgb(20 26 24 / 0.55));
+  }
+
+  .video__button {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: 5.25rem;
+    height: 5.25rem;
+    border-radius: 50%;
+    background: var(--yellow);
+    color: var(--slate);
+    box-shadow: 0 8px 30px rgb(0 0 0 / 0.35);
+    transform: translate(-50%, -50%);
+    transition: transform 0.25s var(--ease-out);
+  }
+
+  .video__button :global(svg) {
+    margin-left: 0.3rem;
+    fill: currentColor;
+  }
+
+  .video__facade:hover .video__button,
+  .video__facade:focus-visible .video__button {
+    transform: translate(-50%, -50%) scale(1.07);
+  }
+
+  .video__facade:focus-visible {
+    outline: 3px solid var(--yellow);
+    outline-offset: -6px;
+  }
+
+  .video__hint {
+    position: absolute;
+    left: 1rem;
+    bottom: 0.85rem;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    text-shadow: 0 1px 4px rgb(0 0 0 / 0.6);
+  }
+
+  .video__privacy {
+    margin-top: 0.6rem;
+    color: var(--ink-mute);
+    font-size: var(--text-xs);
+  }
+</style>

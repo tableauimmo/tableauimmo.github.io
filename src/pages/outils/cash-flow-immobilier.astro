@@ -1,0 +1,65 @@
+---
+import ToolPage from '../../components/ToolPage.astro';
+import { TOOLS } from '../../data/tools.ts';
+import { href } from '../../lib/url.ts';
+import { cashflowTool } from '../../tools/cashflow/tool.ts';
+
+const faq = [
+  {
+    q: 'Qu’est-ce qu’un cash-flow positif ?',
+    a: 'C’est un bien dont les loyers encaissés couvrent la mensualité du crédit et toutes les charges du propriétaire, avec un excédent chaque mois. À l’inverse, un cash-flow négatif signifie qu’il faut compléter de sa poche : c’est l’« effort d’épargne ».',
+  },
+  {
+    q: 'Pourquoi calculer le cash-flow avant impôt ?',
+    a: 'Parce que l’impôt dépend de votre situation et du régime fiscal du bien (micro-foncier, régime réel, location meublée). Le cash-flow avant impôt permet de comparer des biens entre eux ; l’impôt et les prélèvements sociaux se calculent ensuite, selon votre tranche et votre régime.',
+  },
+  {
+    q: 'Un cash-flow négatif est-il forcément un mauvais investissement ?',
+    a: 'Pas forcément : une partie de la mensualité rembourse du capital, qui reste à vous. Mais un effort d’épargne mensuel doit être supportable dans la durée, y compris en cas de vacance, de travaux imprévus ou de hausse des charges. C’est un risque à mesurer, pas à ignorer.',
+  },
+  {
+    q: 'Quelle provision prévoir pour l’entretien ?',
+    a: 'Il n’existe pas de règle officielle. Beaucoup d’investisseurs mettent de côté chaque mois une somme pour l’entretien et les petites réparations, d’autant plus élevée que le logement est ancien ou meublé. Les gros travaux votés en copropriété se provisionnent à part.',
+  },
+];
+
+const sources = [
+  { title: 'Investissement locatif : précautions et vérifications — ANIL', url: 'https://www.anil.org/votre-projet/vous-etes-proprietaire/bailleur/investissement-locatif/', date: new Date('2026-10-15') },
+  { title: 'Investissement locatif : location de courte ou de longue durée ? — economie.gouv.fr', url: 'https://www.economie.gouv.fr/particuliers/gerer-mon-argent/investir-dans-limmobilier/investissement-locatif-comment-choisir-entre-la-location-de-courte-et-longue-duree', date: new Date('2026-10-15') },
+];
+---
+
+<ToolPage
+  info={TOOLS.cashflow}
+  tool={cashflowTool}
+  lead="Loyer, vacance, mensualité et charges : le tableau montre ce que le bien vous rapporte, ou vous coûte, chaque mois avant impôt, ligne par ligne."
+  faq={faq}
+  sources={sources}
+  updated={new Date('2026-10-15')}
+  terms={['cash-flow', 'effet-de-levier', 'rendement-net', 'apport']}
+>
+  <h2>La formule du cash-flow</h2>
+  <p>Le cash-flow mensuel avant impôt, c’est ce qui reste sur le compte une fois tout payé :</p>
+  <p class="formula-static"><span class="hand">Cash-flow = loyer encaissé − mensualité du crédit − charges du propriétaire</span></p>
+  <ul>
+    <li><strong>Loyer encaissé</strong> : le loyer hors charges, diminué de la vacance (2 semaines par an = 3,8 % de loyers en moins).</li>
+    <li><strong>Mensualité</strong> : assurance emprunteur comprise. Calculez-la avec le <a href={href('/outils/mensualite-credit-immobilier/')}>calculateur de mensualité</a>.</li>
+    <li>
+      <strong>Charges du propriétaire</strong> : copropriété non récupérable, taxe foncière et assurance PNO (ramenées au mois), gestion locative, provision pour
+      entretien.
+    </li>
+  </ul>
+  <h2>Cash-flow et effet de levier</h2>
+  <p>
+    Emprunter permet d’acheter un bien plus cher que son épargne : c’est l’<a href={href('/lexique/effet-de-levier/')}>effet de levier</a>. Il joue en votre
+    faveur quand le bien rapporte plus que ce que coûte le crédit, et contre vous dans le cas inverse. Le cash-flow mesure ce levier au quotidien ; le
+    <a href={href('/outils/rendement-locatif/')}>rendement</a> mesure la qualité du bien lui-même.
+  </p>
+</ToolPage>
+
+<script>
+  import { mountTool } from '../../tools/shared/ui.ts';
+  import { cashflowTool } from '../../tools/cashflow/tool.ts';
+
+  mountTool(cashflowTool);
+</script>

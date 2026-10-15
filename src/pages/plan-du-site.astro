@@ -1,0 +1,93 @@
+---
+import { getCollection } from 'astro:content';
+import TextPage from '../components/TextPage.astro';
+import { SITE } from '../../site.config.mjs';
+import { CATEGORY_LIST, categoryPath } from '../data/categories.ts';
+import { TOOL_LIST, toolPath } from '../data/tools.ts';
+import { episodePath, getPublishedEpisodes } from '../lib/episodes.ts';
+import { collator } from '../lib/format.ts';
+import { ogImage } from '../lib/social.ts';
+import { href } from '../lib/url.ts';
+
+const episodes = await getPublishedEpisodes();
+const terms = (await getCollection('lexique')).sort((a, b) => collator.compare(a.data.term, b.data.term));
+---
+
+<TextPage
+  title="Plan du site"
+  heading="Plan du site"
+  description={`Toutes les pages de ${SITE.name} : épisodes, thèmes, calculateurs immobiliers, lexique de l’investisseur et informations sur le site.`}
+  path="/plan-du-site/"
+  image={ogImage('default', `Plan du site ${SITE.name}`)}
+>
+  <h2>Les épisodes</h2>
+  <ul>
+    <li><a href={href('/episodes/')}>Tous les épisodes</a></li>
+    {
+      episodes.map((episode) => (
+        <li>
+          <a href={href(episodePath(episode))}>{episode.data.title}</a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <h2>Les thèmes</h2>
+  <ul>
+    <li><a href={href('/categories/')}>Tous les thèmes</a></li>
+    {
+      CATEGORY_LIST.map((category) => (
+        <li>
+          <a href={href(categoryPath(category.key))}>{category.title}</a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <h2>Les calculateurs</h2>
+  <ul>
+    <li><a href={href('/outils/')}>Tous les calculateurs</a></li>
+    {
+      TOOL_LIST.map((tool) => (
+        <li>
+          <a href={href(toolPath(tool.id))}>{tool.title}</a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <h2>Le lexique</h2>
+  <ul class="sitemap-terms">
+    <li><a href={href('/lexique/')}>Le lexique de A à Z</a></li>
+    {
+      terms.map((term) => (
+        <li>
+          <a href={href(`/lexique/${term.id}/`)}>{term.data.term}</a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <h2>Le site</h2>
+  <ul>
+    <li><a href={href('/')}>Accueil</a></li>
+    <li><a href={href('/a-propos/')}>À propos et charte éditoriale</a></li>
+    <li><a href={href('/methode/')}>Notre méthode de calcul</a></li>
+    <li><a href={href('/contact/')}>Contact</a></li>
+    <li><a href={href('/mentions-legales/')}>Mentions légales</a></li>
+    <li><a href={href('/confidentialite/')}>Confidentialité</a></li>
+    <li><a href={href('/rss.xml')}>Flux RSS des épisodes</a></li>
+    <li><a href={href('/llms.txt')}>Résumé pour les assistants IA (llms.txt)</a></li>
+  </ul>
+</TextPage>
+
+<style>
+  .sitemap-terms {
+    columns: 2 14rem;
+    column-gap: 2rem;
+  }
+
+  .sitemap-terms li {
+    break-inside: avoid;
+  }
+</style>

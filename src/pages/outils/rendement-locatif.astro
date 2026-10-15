@@ -1,0 +1,64 @@
+---
+import ToolPage from '../../components/ToolPage.astro';
+import { TOOLS } from '../../data/tools.ts';
+import { href } from '../../lib/url.ts';
+import { yieldTool } from '../../tools/rendement/tool.ts';
+
+const faq = [
+  {
+    q: 'Faut-il calculer le rendement sur le prix d’achat ou sur le coût total ?',
+    a: 'Sur le coût total (prix, frais de notaire, travaux, ameublement) : c’est l’argent réellement investi. Le rendement « sur le prix seul », souvent mis en avant dans les annonces, est plus flatteur. Le calculateur affiche les deux, pour comparer à périmètre égal.',
+  },
+  {
+    q: 'Quelle différence entre rendement net et rendement « net-net » ?',
+    a: 'Le rendement net de charges déduit la vacance et les dépenses du propriétaire (copropriété non récupérable, taxe foncière, assurance, gestion). Le rendement « net-net » déduit en plus l’impôt sur le revenu et les prélèvements sociaux, qui dépendent du régime fiscal et de votre situation.',
+  },
+  {
+    q: 'Quelle vacance locative prévoir ?',
+    a: 'Elle dépend du marché local et du type de bien : quelques jours entre deux locataires dans une ville tendue, plusieurs semaines ailleurs. Prévoir deux à quatre semaines par an est une hypothèse prudente courante ; une colocation ou un meublé de courte durée demandent un calcul spécifique.',
+  },
+  {
+    q: 'Le crédit est-il pris en compte ?',
+    a: 'Non : le rendement mesure ce que rapporte le bien, quel que soit son financement. Pour voir l’effet du crédit sur votre trésorerie mois par mois, utilisez le calculateur de cash-flow.',
+  },
+];
+
+const sources = [
+  { title: 'Investissement locatif : précautions et vérifications — ANIL', url: 'https://www.anil.org/votre-projet/vous-etes-proprietaire/bailleur/investissement-locatif/', date: new Date('2026-10-15') },
+  { title: 'Location vide de meubles : déclarer ses revenus fonciers — impots.gouv.fr', url: 'https://www.impots.gouv.fr/particulier/location-vide-de-meubles', date: new Date('2026-10-15') },
+];
+---
+
+<ToolPage
+  info={TOOLS.rendement}
+  tool={yieldTool}
+  lead="Prix, frais, travaux, loyer et charges : le tableau calcule le rendement brut et le rendement net de charges, avec la vacance et la gestion, et montre chaque formule."
+  faq={faq}
+  sources={sources}
+  updated={new Date('2026-10-15')}
+  terms={['rendement-brut', 'rendement-net', 'frais-de-notaire', 'cash-flow']}
+>
+  <h2>Les deux rendements à connaître</h2>
+  <p>Le <strong>rendement brut</strong> rapporte les loyers annuels au coût total de l’achat :</p>
+  <p class="formula-static"><span class="hand">Rendement brut = loyers annuels ÷ (prix + frais + travaux) × 100</span></p>
+  <p>
+    Le <strong>rendement net de charges</strong> retire d’abord la vacance locative et les dépenses qui restent à la charge du propriétaire : charges de
+    copropriété non récupérables, taxe foncière, assurance propriétaire non occupant (PNO), frais de gestion.
+  </p>
+  <p class="formula-static"><span class="hand">Rendement net = (loyers encaissés − charges) ÷ coût total × 100</span></p>
+  <h2>Pourquoi le brut ne suffit pas</h2>
+  <p>
+    Deux biens affichant 6 % de rendement brut peuvent finir très loin l’un de l’autre : une taxe foncière élevée, une copropriété avec de lourdes charges ou un
+    quartier où les locataires tournent souvent font fondre le rendement net. Comparez toujours les biens sur leur rendement net, puis sur leur
+    <a href={href('/outils/cash-flow-immobilier/')}>cash-flow</a> une fois le crédit pris en compte. L’impôt vient ensuite : il dépend du régime choisi
+    (<a href={href('/lexique/micro-foncier/')}>micro-foncier</a>, <a href={href('/lexique/regime-reel/')}>régime réel</a>,
+    <a href={href('/lexique/lmnp/')}>LMNP</a>…).
+  </p>
+</ToolPage>
+
+<script>
+  import { mountTool } from '../../tools/shared/ui.ts';
+  import { yieldTool } from '../../tools/rendement/tool.ts';
+
+  mountTool(yieldTool);
+</script>

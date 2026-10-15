@@ -1,0 +1,102 @@
+---
+// État « aucun épisode publié » : le site se construit et reste utile sans épisode.
+import Icon from './Icon.astro';
+import { YOUTUBE } from '../../site.config.mjs';
+import { href } from '../lib/url.ts';
+
+interface Props {
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+---
+
+<div class="empty-episodes board board-panel">
+  <div class="empty-episodes__text">
+    <p class="empty-episodes__kicker">Le tableau est prêt…</p>
+    <Heading class="empty-episodes__title chalk-title">Premier épisode bientôt</Heading>
+    <p>
+      Chaque épisode dure une dizaine de minutes : un sujet, un tableau de chiffres, des sources officielles. En attendant, les calculateurs et le lexique sont
+      déjà en ligne.
+    </p>
+    <div class="empty-episodes__actions">
+      <a href={YOUTUBE.subscribeUrl} class="btn btn--primary" rel="noopener" target="_blank"><Icon name="bell" size={18} /> <span>Être prévenu sur YouTube</span></a>
+      <a href={href('/outils/')} class="btn btn--ghost"><Icon name="calculator" size={18} /> <span>Les calculateurs</span></a>
+    </div>
+  </div>
+  <svg class="empty-episodes__chalk" viewBox="0 0 220 150" aria-hidden="true" focusable="false">
+    <path d="M30 120 L30 70 L80 34 L130 70 L130 120 Z" />
+    <path d="M65 120 L65 92 L95 92 L95 120" />
+    <path d="M150 120 L150 96 M170 120 L170 80 M190 120 L190 58" class="y" />
+    <path d="M20 128 C 80 124 150 124 205 127" />
+    <path d="M140 64 C 160 40 178 34 200 30 M190 24 L200 30 L192 39" class="y" />
+  </svg>
+</div>
+
+<style>
+  .empty-episodes {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(10rem, 16rem);
+    align-items: center;
+    gap: 2rem;
+    padding: clamp(1.75rem, 1.25rem + 2vw, 2.75rem);
+  }
+
+  .empty-episodes__text {
+    display: grid;
+    gap: 0.85rem;
+    color: var(--chalk-soft);
+  }
+
+  .empty-episodes__kicker {
+    color: var(--yellow);
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: 1.15rem;
+  }
+
+  .empty-episodes__title {
+    font-size: clamp(2rem, 1.5rem + 2vw, 2.9rem);
+    color: var(--chalk);
+  }
+
+  .empty-episodes__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .empty-episodes__chalk {
+    width: 100%;
+    fill: none;
+    stroke: var(--chalk);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.85;
+  }
+
+  .empty-episodes__chalk path {
+    stroke-dasharray: 400;
+    stroke-dashoffset: 400;
+    animation: chalk-draw 1.6s var(--ease-out) forwards;
+  }
+
+  .empty-episodes__chalk .y {
+    stroke: var(--yellow);
+    animation-delay: 0.5s;
+  }
+
+  @media (max-width: 720px) {
+    .empty-episodes {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .empty-episodes__chalk {
+      max-width: 12rem;
+      order: -1;
+    }
+  }
+</style>

@@ -1,0 +1,48 @@
+---
+import TextPage from '../components/TextPage.astro';
+import { SITE } from '../../site.config.mjs';
+import { LEGAL } from '../data/legal.ts';
+import { ogImage } from '../lib/social.ts';
+---
+
+<TextPage
+  title="Confidentialité et cookies"
+  heading="Confidentialité"
+  kicker="Aucun cookie, aucun pistage"
+  description={`Politique de confidentialité de ${SITE.name} : aucun cookie, aucune mesure d’audience, calculs faits dans le navigateur, lecteur YouTube chargé au clic.`}
+  path="/confidentialite/"
+  image={ogImage('default', `Confidentialité — ${SITE.name}`)}
+  updated={LEGAL.updated}
+>
+  <h2>En résumé</h2>
+  <ul>
+    <li><strong>Aucun cookie</strong> n’est déposé par ce site, et aucun bandeau n’est donc nécessaire.</li>
+    <li><strong>Aucune mesure d’audience</strong>, aucun outil publicitaire, aucun pixel de réseau social.</li>
+    <li>Les <strong>calculateurs</strong> fonctionnent dans votre navigateur : les chiffres saisis ne sont ni envoyés, ni enregistrés.</li>
+    <li>Les <strong>polices</strong> et toutes les ressources du site sont servies depuis le site lui-même.</li>
+  </ul>
+
+  <h2>Hébergement</h2>
+  <p>
+    Le site est hébergé par {LEGAL.host.name}. Comme tout hébergeur, GitHub reçoit l’adresse IP des visiteurs et peut la conserver dans des journaux techniques à
+    des fins de sécurité et de bon fonctionnement du service. Voir la
+    <a href={LEGAL.host.privacy} rel="noopener">déclaration de confidentialité de GitHub</a>.
+  </p>
+
+  <h2>Vidéos YouTube</h2>
+  <p>
+    Sur les pages d’épisode, la vidéo est remplacée par une simple image tant que vous ne cliquez pas : aucune requête n’est faite vers YouTube avant votre clic
+    (seule la miniature peut être chargée depuis i.ytimg.com si l’épisode n’a pas encore sa miniature locale). Au clic, le lecteur est chargé depuis
+    youtube-nocookie.com, le mode de confidentialité renforcée de YouTube ; la lecture est alors soumise aux règles de confidentialité de Google.
+  </p>
+
+  <h2>Liens vers les réseaux sociaux</h2>
+  <p>Les liens vers YouTube, TikTok, Instagram, Facebook, LinkedIn et X sont de simples liens : aucun module de ces services n’est intégré aux pages.</p>
+
+  <h2>Contact par e-mail</h2>
+  <p>
+    Si vous nous écrivez à <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>, votre adresse et votre message sont utilisés uniquement pour vous
+    répondre, puis supprimés dans un délai raisonnable. Ils ne sont jamais revendus ni utilisés à des fins commerciales. Vous pouvez demander l’accès à vos
+    données ou leur suppression à la même adresse, et saisir la CNIL (cnil.fr) en cas de difficulté.
+  </p>
+</TextPage>

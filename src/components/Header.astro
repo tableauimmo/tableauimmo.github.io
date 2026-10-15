@@ -1,0 +1,213 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { YOUTUBE } from '../../site.config.mjs';
+import { href } from '../lib/url.ts';
+
+const NAV = [
+  { label: 'Épisodes', path: '/episodes/' },
+  { label: 'Thèmes', path: '/categories/' },
+  { label: 'Outils', path: '/outils/' },
+  { label: 'Lexique', path: '/lexique/' },
+  { label: 'Méthode', path: '/methode/' },
+];
+
+const current = Astro.url.pathname;
+const isCurrent = (path: string) => current === href(path) || current.startsWith(href(path));
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a href={href('/')} class="site-header__brand" aria-label="Tableau Immo — accueil">
+      <Logo size={38} />
+    </a>
+
+    <nav class="site-nav" aria-label="Navigation principale">
+      <ul>
+        {
+          NAV.map((item) => (
+            <li>
+              <a href={href(item.path)} aria-current={isCurrent(item.path) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <a href={YOUTUBE.subscribeUrl} class="btn btn--primary btn--sm site-header__cta" rel="noopener" target="_blank">
+      <Icon name="youtube" size={18} />
+      <span>S’abonner</span>
+    </a>
+
+    <details class="site-menu">
+      <summary class="site-menu__toggle">
+        <Icon name="menu" size={22} />
+        <span>Menu</span>
+      </summary>
+      <nav class="site-menu__panel" aria-label="Navigation principale (mobile)">
+        <ul>
+          {
+            NAV.map((item) => (
+              <li>
+                <a href={href(item.path)} aria-current={isCurrent(item.path) ? 'page' : undefined}>
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+          <li>
+            <a href={YOUTUBE.subscribeUrl} rel="noopener" target="_blank" class="site-menu__subscribe">
+              <Icon name="youtube" size={18} /> S’abonner sur YouTube
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </details>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    --focus: var(--yellow);
+    position: relative;
+    z-index: 20;
+    background: var(--slate-deep);
+    color: var(--chalk);
+    border-bottom: 1px solid rgb(237 237 230 / 0.08);
+  }
+
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    min-height: 4.25rem;
+  }
+
+  .site-header__brand {
+    color: var(--chalk);
+    text-decoration: none;
+    margin-right: auto;
+  }
+
+  .site-nav ul {
+    display: flex;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-nav a,
+  .site-menu__panel a {
+    position: relative;
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    color: var(--chalk-soft);
+    font-weight: 600;
+    font-size: 0.97rem;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .site-nav a:hover,
+  .site-nav a[aria-current='page'] {
+    color: var(--chalk);
+  }
+
+  .site-nav a[aria-current='page']::after {
+    content: '';
+    position: absolute;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0.2rem;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--yellow);
+    transform: rotate(-1deg);
+    opacity: 0.9;
+  }
+
+  .site-menu {
+    display: none;
+    position: relative;
+  }
+
+  .site-menu__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 2.6rem;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid rgb(237 237 230 / 0.35);
+    border-radius: var(--radius);
+    color: var(--chalk);
+    font-weight: 650;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .site-menu__toggle::-webkit-details-marker {
+    display: none;
+  }
+
+  .site-menu[open] .site-menu__toggle {
+    background: rgb(237 237 230 / 0.08);
+  }
+
+  .site-menu__panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.6rem);
+    width: min(18rem, calc(100vw - 2rem));
+    padding: 0.5rem;
+    border-radius: var(--radius-lg);
+    background: var(--slate-2);
+    border: 1px solid rgb(237 237 230 / 0.12);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .site-menu__panel ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-menu__panel a {
+    padding: 0.75rem 0.85rem;
+    font-size: 1.05rem;
+  }
+
+  .site-menu__panel a[aria-current='page'] {
+    color: var(--yellow);
+  }
+
+  .site-menu__subscribe {
+    display: flex !important;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+    border-top: 1px solid rgb(237 237 230 / 0.12);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm) !important;
+    color: var(--yellow) !important;
+  }
+
+  @media (max-width: 920px) {
+    .site-nav,
+    .site-header__cta {
+      display: none;
+    }
+
+    .site-menu {
+      display: block;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .site-header__brand :global(.logo__name) {
+      font-size: 1.3rem;
+    }
+  }
+</style>

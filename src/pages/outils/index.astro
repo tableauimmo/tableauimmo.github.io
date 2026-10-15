@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
+import ToolCard from '../../components/ToolCard.astro';
+import Disclaimer from '../../components/Disclaimer.astro';
+import { TOOL_LIST, toolPath } from '../../data/tools.ts';
+import { itemListNode } from '../../lib/jsonld.ts';
+import { ogImage } from '../../lib/social.ts';
+import { absoluteUrl, href } from '../../lib/url.ts';
+
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: 'Outils', path: '/outils/' },
+];
+const jsonLd = [itemListNode(TOOL_LIST.map((tool) => ({ name: tool.title, url: absoluteUrl(toolPath(tool.id)) })))];
+---
+
+<BaseLayout
+  title="Calculateurs immobiliers gratuits"
+  description="Mensualité de crédit, capacité d’emprunt, rendement locatif et cash-flow : 4 calculateurs gratuits, sans inscription, avec les formules affichées."
+  path="/outils/"
+  image={ogImage('outils', 'Les calculateurs de Tableau Immo')}
+  crumbs={crumbs}
+  jsonLd={jsonLd}
+>
+  <PageHead
+    crumbs={crumbs}
+    kicker="Gratuits, sans inscription, sans cookie"
+    title="Les calculateurs"
+    lead="Quatre calculs que tout investisseur refait sans cesse. Chaque résultat est posé « au tableau » : les chiffres, la formule, puis l’explication en français."
+  />
+
+  <section class="section">
+    <div class="container">
+      <div class="grid grid--2 tools-grid">
+        {TOOL_LIST.map((tool) => <ToolCard tool={tool} headingLevel="h2" />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--white" aria-labelledby="order-title">
+    <div class="container container--narrow prose">
+      <h2 id="order-title">Dans quel ordre les utiliser ?</h2>
+      <ol>
+        <li>
+          <a href={href(toolPath('capacite'))}>Capacité d’emprunt</a> : combien la banque peut-elle prêter avec la règle des 35 % ?
+        </li>
+        <li>
+          <a href={href(toolPath('rendement'))}>Rendement locatif</a> : le bien rapporte-t-il assez au regard de son prix, une fois les charges payées ?
+        </li>
+        <li>
+          <a href={href(toolPath('credit'))}>Mensualité de crédit</a> : combien coûtera le prêt, mois par mois et au total ?
+        </li>
+        <li>
+          <a href={href(toolPath('cashflow'))}>Cash-flow</a> : chaque mois, le loyer couvre-t-il le crédit et les charges ?
+        </li>
+      </ol>
+      <p>
+        Les calculs se font dans votre navigateur : rien n’est envoyé ni enregistré. L’adresse de la page reprend vos chiffres, pour retrouver ou partager un
+        calcul. Les formules sont détaillées sur la page <a href={href('/methode/')}>Notre méthode</a>.
+      </p>
+      <Disclaimer tool ai={false} />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .tools-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
+  }
+</style>

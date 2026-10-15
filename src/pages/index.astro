@@ -1,0 +1,497 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EpisodeCard from '../components/EpisodeCard.astro';
+import UpcomingCard from '../components/UpcomingCard.astro';
+import EmptyEpisodes from '../components/EmptyEpisodes.astro';
+import ToolCard from '../components/ToolCard.astro';
+import CategoryCard from '../components/CategoryCard.astro';
+import TermNote from '../components/TermNote.astro';
+import SocialLinks from '../components/SocialLinks.astro';
+import Icon from '../components/Icon.astro';
+import { SITE, YOUTUBE } from '../../site.config.mjs';
+import { CATEGORY_LIST } from '../data/categories.ts';
+import { TOOL_LIST, toolPath } from '../data/tools.ts';
+import { episodePath, getPublishedEpisodes, getUpcomingEpisodes, inCategory } from '../lib/episodes.ts';
+import { itemListNode, seriesNode } from '../lib/jsonld.ts';
+import { ogImage } from '../lib/social.ts';
+import { absoluteUrl, href } from '../lib/url.ts';
+import { computeCashflow } from '../tools/cashflow/logic.ts';
+import { computeLoan } from '../tools/credit/logic.ts';
+import { computeYield } from '../tools/rendement/logic.ts';
+import { formatEuro, formatPercent, formatSignedEuro } from '../tools/shared/numbers.ts';
+
+const published = await getPublishedEpisodes();
+const upcoming = await getUpcomingEpisodes();
+const latest = published.slice(0, 6);
+const nextUp = upcoming[0];
+const FEATURED_TERMS = ['lmnp', 'deficit-foncier', 'cash-flow', 'hcsf', 'jeanbrun', 'plus-value-immobiliere'];
+const allTerms = await getCollection('lexique');
+const featuredTerms = FEATURED_TERMS.map((id) => allTerms.find((term) => term.id === id)).filter((term) => term !== undefined);
+
+// Le tableau de l'accueil : un cas d'école calculé au build avec les mêmes formules que les calculateurs.
+const example = { price: 120_000, fees: 9_600, rent: 690, loan: 110_000, rate: 3.4, years: 25, insurance: 0.25, copro: 30, tax: 840, pno: 120, upkeep: 15 };
+const yieldResult = computeYield({ price: example.price, fees: example.fees, works: 0, rent: example.rent, vacancyWeeks: 2, nonRecoverable: example.copro * 12, propertyTax: example.tax, insurance: example.pno, management: 0 });
+const loan = computeLoan({ capital: example.loan, rate: example.rate, years: example.years, insurance: example.insurance });
+const cashflow = computeCashflow({ rent: example.rent, vacancyWeeks: 2, loanPayment: loan.monthlyTotal, coproCharges: example.copro, propertyTax: example.tax, insurance: example.pno, management: 0, maintenance: example.upkeep });
+const exampleLink = `${href(toolPath('cashflow'))}?loyer=${example.rent}&credit=${loan.monthlyTotal.toFixed(2)}&copro=${example.copro}&tf=${example.tax}&entretien=${example.upkeep}`;
+
+const jsonLd = [
+  seriesNode({ description: `${SITE.name} : l’investissement immobilier en France expliqué au tableau, en vidéos d’une dizaine de minutes.`, episodeCount: published.length }),
+  ...(latest.length ? [itemListNode(latest.map((episode) => ({ name: episode.data.title, url: absoluteUrl(episodePath(episode)) })))] : []),
+];
+---
+
+<BaseLayout
+  title={`${SITE.name} — l’investissement immobilier expliqué au tableau`}
+  description="Tableau Immo explique l’investissement immobilier en France au tableau : vidéos de 10 minutes, calculateurs gratuits et lexique, sourcés et datés."
+  path="/"
+  image={ogImage('default', `${SITE.name} — l’investissement immobilier expliqué au tableau`)}
+  jsonLd={jsonLd}
+>
+  <section class="hero board board--ledge" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div class="hero__text">
+        <p class="hero__kicker">La chaîne qui pose l’immobilier au tableau</p>
+        <h1 id="hero-title" class="hero__title chalk-title">
+          L’investissement immobilier, <span class="chalk-yellow">expliqué au tableau.</span>
+        </h1>
+        <p class="hero__lead">
+          Fiscalité, crédit, rendement, juridique : des vidéos d’une dizaine de minutes où chaque règle est posée au tableau, chiffrée, sourcée et datée. Pour
+          comprendre avant de décider.
+        </p>
+        <div class="hero__actions">
+          <a href={YOUTUBE.subscribeUrl} class="btn btn--primary" rel="noopener" target="_blank"><Icon name="youtube" /> <span>S’abonner sur YouTube</span></a>
+          <a href={href('/episodes/')} class="btn btn--ghost"><span>Voir les épisodes</span> <Icon name="arrow" size={18} /></a>
+        </div>
+        <div class="hero__social">
+          <p>Aussi en format court sur</p>
+          <SocialLinks />
+        </div>
+      </div>
+
+      <figure class="hero__board" aria-labelledby="hero-board-title">
+        {
+          nextUp && published.length === 0 ? (
+            <div class="hero__note note note--tilt-r">
+              <p class="hero__note-label">Premier épisode</p>
+              <p class="hero__note-title">{nextUp.data.title}</p>
+            </div>
+          ) : published[0] ? (
+            <a class="hero__note note note--tilt-r" href={href(episodePath(published[0]))}>
+              <span class="hero__note-label">Dernier épisode</span>
+              <span class="hero__note-title">{published[0].data.title}</span>
+            </a>
+          ) : (
+            <div class="hero__note note note--tilt-r">
+              <p class="hero__note-label">Bientôt</p>
+              <p class="hero__note-title">Le premier épisode arrive</p>
+            </div>
+          )
+        }
+        <p id="hero-board-title" class="hero__board-title chalk-title">Un T2 à {formatEuro(example.price)}</p>
+        <table class="hero__table">
+          <caption class="visually-hidden">Cas d’école : rendement et cash-flow d’un T2 loué</caption>
+          <tbody>
+            <tr><th scope="row">Prix + frais de notaire</th><td>{formatEuro(example.price + example.fees)}</td></tr>
+            <tr><th scope="row">Loyer hors charges</th><td>{formatEuro(example.rent)} / mois</td></tr>
+            <tr class="is-key"><th scope="row">Rendement brut</th><td>{formatPercent(yieldResult.gross, 1)}</td></tr>
+            <tr><th scope="row">Crédit {formatEuro(example.loan)}, {example.years} ans, {formatPercent(example.rate, 1)}</th><td>{formatEuro(loan.monthlyTotal)} / mois</td></tr>
+            <tr class="is-key"><th scope="row">Cash-flow avant impôt</th><td>{formatSignedEuro(cashflow.monthly)} / mois</td></tr>
+          </tbody>
+        </table>
+        <p class="hero__annotation" aria-hidden="true">
+          <span class="hand">l’effort d’épargne à prévoir</span>
+          <svg viewBox="0 0 60 50" focusable="false"><path d="M6 44 C 22 40 40 30 50 8 M40 14 L50 6 L54 18" /></svg>
+        </p>
+        <figcaption class="hero__caption">
+          Cas d’école, chiffres arrondis, hors impôt. <a href={exampleLink}>Refaire le calcul</a>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="latest-title">
+    <div class="container">
+      <header class="section-head section-head--split">
+        <div class="stack">
+          <p class="eyebrow">Les épisodes</p>
+          <h2 id="latest-title" class="section-title">Derniers épisodes</h2>
+        </div>
+        {published.length > 0 && <a href={href('/episodes/')} class="link-arrow">Tous les épisodes <Icon name="arrow" size={16} /></a>}
+      </header>
+      {
+        latest.length > 0 ? (
+          <div class="grid grid--3">
+            {latest.map((episode, index) => (
+              <EpisodeCard episode={episode} eager={index === 0} />
+            ))}
+          </div>
+        ) : (
+          <EmptyEpisodes />
+        )
+      }
+      {
+        upcoming.length > 0 && (
+          <div class="home__upcoming">
+            <h3 class="home__upcoming-title">Bientôt sur YouTube</h3>
+            <div class="grid grid--3">
+              {upcoming.slice(0, 3).map((episode) => (
+                <UpcomingCard episode={episode} />
+              ))}
+            </div>
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="section section--white" aria-labelledby="tools-title">
+    <div class="container">
+      <header class="section-head section-head--split">
+        <div class="stack">
+          <p class="eyebrow">Les calculateurs</p>
+          <h2 id="tools-title" class="section-title">Faites le calcul, formule à l’appui</h2>
+          <p class="section-lead">Gratuits, sans inscription et sans cookie. Chaque résultat est posé au tableau : les chiffres, la formule, puis l’explication.</p>
+        </div>
+        <a href={href('/outils/')} class="link-arrow">Tous les outils <Icon name="arrow" size={16} /></a>
+      </header>
+      <div class="grid grid--4">
+        {TOOL_LIST.map((tool) => <ToolCard tool={tool} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="themes-title">
+    <div class="container">
+      <header class="section-head">
+        <p class="eyebrow">Les thèmes</p>
+        <h2 id="themes-title" class="section-title">Du crédit à la revente, tout le parcours</h2>
+      </header>
+      <div class="grid grid--4 home__themes">
+        {CATEGORY_LIST.map((category) => <CategoryCard category={category} count={inCategory(published, category.key).length} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--paper" aria-labelledby="lexicon-title">
+    <div class="container">
+      <header class="section-head section-head--split">
+        <div class="stack">
+          <p class="eyebrow">Le lexique</p>
+          <h2 id="lexicon-title" class="section-title">Les mots de l’investisseur, sans jargon</h2>
+          <p class="section-lead">{allTerms.length} définitions courtes, sourcées et mises à jour, de l’apport au viager.</p>
+        </div>
+        <a href={href('/lexique/')} class="link-arrow">Tout le lexique <Icon name="arrow" size={16} /></a>
+      </header>
+      <div class="grid grid--3 home__terms">
+        {featuredTerms.map((term, index) => <TermNote term={term} tilt={index % 2 ? 'r' : 'l'} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section board method" aria-labelledby="method-title">
+    <div class="container">
+      <header class="section-head">
+        <p class="method__kicker hand">Notre façon de travailler</p>
+        <h2 id="method-title" class="section-title method__title">Pédagogique, sourcé, daté. Jamais un conseil personnalisé.</h2>
+      </header>
+      <ul class="method__list">
+        <li>
+          <Icon name="book" size={26} />
+          <h3>Des sources officielles</h3>
+          <p>Légifrance, BOFiP, impots.gouv.fr, Banque de France, INSEE, ANIL : chaque règle renvoie au texte qui la fonde.</p>
+        </li>
+        <li>
+          <Icon name="refresh" size={26} />
+          <h3>Des pages datées</h3>
+          <p>La fiscalité bouge chaque année. Chaque page indique sa dernière vérification et signale les règles en discussion.</p>
+        </li>
+        <li>
+          <Icon name="calculator" size={26} />
+          <h3>Des calculs vérifiables</h3>
+          <p>Les formules sont affichées et testées. Les exemples chiffrés sont des cas d’école, jamais des promesses de rendement.</p>
+        </li>
+        <li>
+          <Icon name="sparkles" size={26} />
+          <h3>L’IA, en transparence</h3>
+          <p>Illustrations et voix sont générées avec l’aide de l’IA ; le contenu est vérifié et sourcé avant publication.</p>
+        </li>
+      </ul>
+      <p class="method__links">
+        <a href={href('/methode/')} class="btn btn--ghost btn--sm">Notre méthode</a>
+        <a href={href('/a-propos/')} class="btn btn--ghost btn--sm">La charte éditoriale</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-block: clamp(2.5rem, 1.5rem + 4vw, 5rem) clamp(3rem, 2rem + 4vw, 5.5rem);
+    overflow: hidden;
+  }
+
+  .hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    align-items: center;
+    gap: clamp(2rem, 1rem + 4vw, 4.5rem);
+  }
+
+  .hero__text {
+    display: grid;
+    gap: 1.25rem;
+    justify-items: start;
+  }
+
+  .hero__kicker {
+    color: var(--yellow);
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: var(--text-lg);
+  }
+
+  .hero__title {
+    font-size: clamp(2.4rem, 1.35rem + 3vw, 3.9rem);
+    color: var(--chalk);
+    text-wrap: balance;
+  }
+
+  .hero__lead {
+    max-width: 36rem;
+    color: var(--chalk-soft);
+    font-size: var(--text-lg);
+    line-height: 1.6;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.4rem;
+  }
+
+  .hero__social {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 0.75rem;
+    color: var(--chalk-mute);
+    font-size: var(--text-sm);
+  }
+
+  .hero__board {
+    position: relative;
+    margin: 0;
+    padding: clamp(1.25rem, 1rem + 1.5vw, 2rem) clamp(1.25rem, 1rem + 1.5vw, 2rem) 1.25rem;
+    border: 2px solid rgb(237 237 230 / 0.16);
+    border-radius: 6px;
+    background: rgb(0 0 0 / 0.12);
+    transform: rotate(-0.6deg);
+    animation: fade-up 0.8s var(--ease-out) both;
+  }
+
+  .hero__board-title {
+    margin-bottom: 0.9rem;
+    font-size: clamp(1.6rem, 1.3rem + 1.2vw, 2.3rem);
+    color: var(--chalk);
+  }
+
+  .hero__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hero__table th,
+  .hero__table td {
+    padding: 0.55rem 0;
+    border-bottom: 1.5px solid var(--chalk-line);
+    vertical-align: baseline;
+  }
+
+  .hero__table th {
+    padding-right: 1rem;
+    text-align: left;
+    color: var(--chalk-soft);
+    font-family: var(--font-hand);
+    font-size: 1.08rem;
+    font-weight: 400;
+    line-height: 1.3;
+  }
+
+  .hero__table td {
+    text-align: right;
+    white-space: nowrap;
+    font-weight: 650;
+    color: var(--chalk);
+  }
+
+  .hero__table tr.is-key th {
+    color: var(--chalk);
+    font-weight: 700;
+  }
+
+  .hero__table tr.is-key td {
+    color: var(--yellow);
+    font-size: 1.25rem;
+    font-weight: 800;
+  }
+
+  .hero__table tr:last-child th,
+  .hero__table tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .hero__annotation {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    margin: -0.15rem 0.6rem 0 0;
+    color: var(--yellow);
+  }
+
+  .hero__annotation .hand {
+    font-size: 1.05rem;
+    line-height: 1.1;
+    transform: rotate(-3deg) translateY(0.3rem);
+  }
+
+  .hero__annotation svg {
+    flex: none;
+    width: 2.6rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 120;
+    stroke-dashoffset: 120;
+    animation: chalk-draw 1s 0.6s var(--ease-out) forwards;
+  }
+
+  .hero__caption {
+    margin-top: 0.9rem;
+    color: var(--chalk-mute);
+    font-size: var(--text-xs);
+  }
+
+  .hero__note {
+    position: absolute;
+    top: -2.4rem;
+    right: -0.75rem;
+    display: grid;
+    gap: 0.1rem;
+    max-width: 14rem;
+    padding: 1.1rem 1rem 0.85rem;
+    color: var(--ink);
+    text-decoration: none;
+    transform: rotate(3deg);
+  }
+
+  .hero__note-label {
+    color: var(--orange-ink);
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  .hero__note-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.3;
+  }
+
+  a.hero__note:hover .hero__note-title {
+    text-decoration: underline;
+  }
+
+  .home__upcoming {
+    display: grid;
+    gap: 1.75rem;
+    margin-top: 3rem;
+  }
+
+  .home__upcoming-title {
+    font-size: var(--text-xl);
+  }
+
+  .home__themes {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16.5rem), 1fr));
+  }
+
+  .home__terms {
+    row-gap: 2.5rem;
+  }
+
+  .method__kicker {
+    color: var(--yellow);
+    font-size: var(--text-lg);
+    font-weight: 700;
+  }
+
+  .method__title {
+    color: var(--chalk);
+    max-width: 30ch;
+  }
+
+  .method__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .method__list li {
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+    padding: 1.3rem;
+    border: 1.5px dashed rgb(237 237 230 / 0.25);
+    border-radius: var(--radius);
+  }
+
+  .method__list :global(svg) {
+    color: var(--yellow);
+  }
+
+  .method__list h3 {
+    color: var(--chalk);
+    font-size: 1.1rem;
+  }
+
+  .method__list p {
+    color: var(--chalk-soft);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+  }
+
+  .method__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 900px) {
+    .hero__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .hero__board {
+      margin-top: 2.5rem;
+      transform: none;
+    }
+
+    .hero__note {
+      position: relative;
+      top: auto;
+      right: auto;
+      width: fit-content;
+      margin: -3rem -0.4rem 0.9rem auto;
+    }
+  }
+</style>

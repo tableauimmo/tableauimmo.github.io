@@ -1,0 +1,66 @@
+---
+// « Le tableau de l'épisode » : un vrai tableau HTML, présenté comme un tableau noir.
+// Les cellules **entre doubles astérisques** sont les chiffres clés (craie jaune).
+import type { Tableau } from '../lib/schemas.ts';
+
+interface Props {
+  tableau: Tableau;
+  id?: string;
+}
+
+const { tableau, id = 'tableau' } = Astro.props;
+const NUMERIC = /^[−+\-]?\s*[\d\s  .,]+\s*(?:k?€|%|€\/mois|€\/an|ans?|mois|semaines?|m²|pts?)?(?:\s*\/\s*\w+)?$/i;
+
+interface Cell {
+  /** Morceaux de texte ; `strong` = chiffre clé (craie jaune) */
+  parts: { text: string; strong: boolean }[];
+  key: boolean;
+  numeric: boolean;
+}
+
+function cell(raw: string): Cell {
+  const parts = raw
+    .trim()
+    .split(/(\*\*[^*]+\*\*)/)
+    .filter(Boolean)
+    .map((part) => (part.startsWith('**') && part.endsWith('**') ? { text: part.slice(2, -2), strong: true } : { text: part, strong: false }));
+  const text = parts.map((part) => part.text).join('');
+  const key = parts.length === 1 && parts[0]?.strong === true;
+  return { parts: key ? [{ text, strong: false }] : parts, key, numeric: NUMERIC.test(text.trim()) };
+}
+
+const rows = tableau.rows.map((row) => row.map(cell));
+// Une colonne est numérique (alignée à droite) si la plupart de ses cellules sont des nombres.
+const numericColumn = tableau.columns.map((_, index) => index > 0 && rows.filter((row) => row[index]?.numeric).length * 2 > rows.length);
+---
+
+<figure class="chalk-board board board-panel" id={id}>
+  <div class="table-scroll" tabindex="0" role="region" aria-labelledby={`${id}-caption`}>
+    <table class="chalk-table" style={`--cols:${tableau.columns.length}`}>
+      <caption id={`${id}-caption`} class="chalk-table__caption">{tableau.caption}</caption>
+      <thead>
+        <tr>{tableau.columns.map((column, index) => <th scope="col" class:list={{ 'is-num': numericColumn[index] }}>{column}</th>)}</tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((row) => (
+            <tr>
+              {row.map((value, index) =>
+                index === 0 ? (
+                  <th scope="row" class:list={{ 'is-key': value.key }}>
+                    {value.parts.map((part) => (part.strong ? <strong>{part.text}</strong> : part.text))}
+                  </th>
+                ) : (
+                  <td class:list={{ 'is-key': value.key, 'is-num': value.numeric && numericColumn[index] }}>
+                    {value.parts.map((part) => (part.strong ? <strong>{part.text}</strong> : part.text))}
+                  </td>
+                ),
+              )}
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+  {tableau.note && <figcaption class="chalk-table__note">↳ {tableau.note}</figcaption>}
+</figure>

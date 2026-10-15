@@ -1,0 +1,74 @@
+# Déploiement du site sur GitHub Pages.
+#
+# - à chaque modification poussée sur main ;
+# - lancé par la synchronisation YouTube quand un épisode vient d'être publié (workflow_call) ;
+# - à la main depuis l'onglet « Actions » (workflow_dispatch).
+#
+# Le site est entièrement vérifié avant d'être publié : types et contenu, tests unitaires, construction,
+# tests de bout en bout (navigateur réel). Un contenu invalide bloque la mise en ligne.
+#
+# Réglage unique du dépôt : Settings → Pages → Source : « GitHub Actions ».
+
+name: Déploiement
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        description: Branche ou commit à déployer
+        type: string
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  verifier-et-construire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Installation du navigateur de test
+        run: npx playwright install --with-deps chromium
+
+      - name: Vérification complète (types, unitaires, construction, bout en bout)
+        run: npm run verify
+
+      - uses: actions/configure-pages@v6
+
+      - name: Envoi du site construit
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deployer:
+    needs: verifier-et-construire
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Mise en ligne sur GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

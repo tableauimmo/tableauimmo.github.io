@@ -1,0 +1,73 @@
+---
+import TextPage from '../components/TextPage.astro';
+import { SITE } from '../../site.config.mjs';
+import { ogImage } from '../lib/social.ts';
+import { href } from '../lib/url.ts';
+import { toolPath } from '../data/tools.ts';
+---
+
+<TextPage
+  title="Notre méthode de calcul"
+  heading="Notre méthode"
+  kicker="Les formules, sans boîte noire"
+  lead="Les formules exactes utilisées par les calculateurs et les épisodes, leurs hypothèses et leurs limites, pour que chacun puisse refaire le calcul à la main."
+  description="Les formules utilisées par Tableau Immo : mensualité, coût du crédit, capacité d’emprunt (HCSF), rendement brut et net, cash-flow. Hypothèses et limites."
+  path="/methode/"
+  image={ogImage('methode', `La méthode de ${SITE.name}`)}
+  updated={new Date('2026-10-15')}
+>
+  <h2>Principes</h2>
+  <ul>
+    <li>Les calculs se font <strong>dans votre navigateur</strong> : aucune donnée n’est envoyée ni conservée.</li>
+    <li>Les montants sont calculés sans arrondi intermédiaire, puis arrondis à l’affichage (à l’euro ou au centime).</li>
+    <li>Les formules sont <strong>testées automatiquement</strong> avec des valeurs connues à chaque modification du site.</li>
+    <li>Les résultats sont des <strong>estimations</strong> : ils ne tiennent pas compte de votre fiscalité personnelle ni des conditions précises d’une offre de prêt.</li>
+  </ul>
+
+  <h2>Crédit immobilier</h2>
+  <p>Prêt à taux fixe, mensualités constantes (amortissement « à la française ») :</p>
+  <ul>
+    <li><strong>Taux mensuel</strong> : t = taux nominal annuel ÷ 12.</li>
+    <li><strong>Mensualité hors assurance</strong> : M = C × t ÷ (1 − (1 + t)<sup>−n</sup>), avec C le capital et n le nombre de mois. À taux nul : M = C ÷ n.</li>
+    <li><strong>Assurance mensuelle</strong> : C × taux d’assurance annuel ÷ 12 (assurance calculée sur le capital initial).</li>
+    <li><strong>Intérêts du mois</strong> : capital restant dû × t ; le reste de la mensualité rembourse le capital.</li>
+    <li><strong>Coût du crédit</strong> : total des intérêts + total de l’assurance. Les frais de dossier, de garantie et de courtage ne sont pas inclus.</li>
+  </ul>
+  <p>Exemple de contrôle : 200 000 € sur 20 ans à 3,5 % donnent une mensualité de 1 159,92 € hors assurance. <a href={href(toolPath('credit'))}>Calculateur</a></p>
+
+  <h2>Capacité d’emprunt</h2>
+  <ul>
+    <li><strong>Revenus retenus</strong> = revenus nets mensuels avant impôt + 70 % des loyers déjà perçus (pratique bancaire courante).</li>
+    <li><strong>Mensualités maximales</strong> = revenus retenus × 35 % (règle du HCSF, assurance comprise).</li>
+    <li><strong>Mensualité disponible</strong> = mensualités maximales − crédits en cours.</li>
+    <li><strong>Capital empruntable</strong> = mensualité disponible ÷ (t ÷ (1 − (1 + t)<sup>−n</sup>) + taux d’assurance ÷ 12).</li>
+  </ul>
+  <p>La durée maximale de la règle est de 25 ans (27 ans avec différé). <a href={href(toolPath('capacite'))}>Calculateur</a></p>
+
+  <h2>Rendement locatif</h2>
+  <ul>
+    <li><strong>Coût total</strong> = prix + frais d’achat + travaux et ameublement.</li>
+    <li><strong>Rendement brut</strong> = loyers annuels hors charges ÷ coût total × 100 (le calculateur affiche aussi la version « sur le prix seul »).</li>
+    <li><strong>Loyers encaissés</strong> = loyers annuels × (1 − semaines de vacance ÷ 52).</li>
+    <li><strong>Charges du propriétaire</strong> = copropriété non récupérable + taxe foncière + assurance PNO + gestion (en % des loyers encaissés).</li>
+    <li><strong>Rendement net de charges</strong> = (loyers encaissés − charges) ÷ coût total × 100, avant impôt et hors crédit.</li>
+  </ul>
+  <p><a href={href(toolPath('rendement'))}>Calculateur</a></p>
+
+  <h2>Cash-flow</h2>
+  <ul>
+    <li><strong>Loyer encaissé mensuel</strong> = loyer × (1 − semaines de vacance ÷ 52).</li>
+    <li>
+      <strong>Charges mensuelles</strong> = copropriété non récupérable + (taxe foncière + assurance PNO) ÷ 12 + gestion + provision d’entretien.
+    </li>
+    <li><strong>Cash-flow avant impôt</strong> = loyer encaissé − mensualité du crédit (assurance comprise) − charges mensuelles.</li>
+  </ul>
+  <p><a href={href(toolPath('cashflow'))}>Calculateur</a></p>
+
+  <h2>Les règles fiscales et juridiques</h2>
+  <p>
+    Les règles citées dans les épisodes et le <a href={href('/lexique/')}>lexique</a> sont vérifiées sur les sources officielles (Légifrance, BOFiP, impots.gouv.fr,
+    service-public.fr, economie.gouv.fr, Banque de France, INSEE, ANIL) à la date indiquée sur chaque page. Les projets de loi sont signalés comme tels, avec leur
+    date, tant qu’ils ne sont pas votés. Une règle qui change entraîne la mise à jour de la page et de sa date.
+  </p>
+</TextPage>

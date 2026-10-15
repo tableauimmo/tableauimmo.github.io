@@ -1,0 +1,100 @@
+---
+import Icon from './Icon.astro';
+import { toolPath, type ToolInfo } from '../data/tools.ts';
+import { href } from '../lib/url.ts';
+
+interface Props {
+  tool: ToolInfo;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { tool, headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+---
+
+<article class="tool-card">
+  <span class="tool-card__icon"><Icon name={tool.icon as 'calculator'} size={24} /></span>
+  <Heading class="tool-card__title"><a href={href(toolPath(tool.id))}>{tool.name}</a></Heading>
+  <p class="tool-card__tagline">{tool.tagline}</p>
+  <p class="tool-card__formula board"><span class="visually-hidden">Formule : </span>{tool.formula}</p>
+  <span class="tool-card__go" aria-hidden="true">Calculer <Icon name="arrow" size={16} /></span>
+</article>
+
+<style>
+  .tool-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1.35rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.25s var(--ease-out), box-shadow 0.25s, border-color 0.25s;
+  }
+
+  .tool-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+    border-color: var(--line-strong);
+  }
+
+  .tool-card__icon {
+    display: grid;
+    place-items: center;
+    width: 2.9rem;
+    height: 2.9rem;
+    border-radius: var(--radius);
+    background: var(--slate);
+    color: var(--yellow);
+  }
+
+  .tool-card__title {
+    font-size: 1.15rem;
+  }
+
+  .tool-card__title a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .tool-card__title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .tool-card:has(a:focus-visible) {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  .tool-card__title a:focus-visible {
+    outline: none;
+  }
+
+  .tool-card__tagline {
+    color: var(--ink-soft);
+    font-size: var(--text-sm);
+  }
+
+  .tool-card__formula {
+    margin-top: auto;
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-hand);
+    font-size: 0.98rem;
+    line-height: 1.35;
+    color: var(--chalk);
+  }
+
+  .tool-card__go {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--link);
+    font-weight: 700;
+    font-size: var(--text-sm);
+  }
+</style>

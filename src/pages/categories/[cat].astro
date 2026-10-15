@@ -1,0 +1,97 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
+import EpisodeCard from '../../components/EpisodeCard.astro';
+import UpcomingCard from '../../components/UpcomingCard.astro';
+import EmptyEpisodes from '../../components/EmptyEpisodes.astro';
+import TermNote from '../../components/TermNote.astro';
+import CategoryCard from '../../components/CategoryCard.astro';
+import { CATEGORIES, CATEGORY_KEYS, CATEGORY_LIST, categoryPath, type CategoryKey } from '../../data/categories.ts';
+import { collator } from '../../lib/format.ts';
+import { episodePath, getPublishedEpisodes, getUpcomingEpisodes, inCategory } from '../../lib/episodes.ts';
+import { itemListNode, webPageNode } from '../../lib/jsonld.ts';
+import { ogImage } from '../../lib/social.ts';
+import { absoluteUrl } from '../../lib/url.ts';
+
+export const getStaticPaths = (() => CATEGORY_KEYS.map((cat) => ({ params: { cat } }))) satisfies GetStaticPaths;
+
+const key = Astro.params.cat as CategoryKey;
+const category = CATEGORIES[key];
+const episodes = inCategory(await getPublishedEpisodes(), key);
+const upcoming = (await getUpcomingEpisodes()).filter((episode) => episode.data.category === key);
+const terms = (await getCollection('lexique', (term) => term.data.category === key)).sort((a, b) => collator.compare(a.data.term, b.data.term));
+const others = CATEGORY_LIST.filter((other) => other.key !== key);
+const path = categoryPath(key);
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: 'Thèmes', path: '/categories/' },
+  { name: category.label, path },
+];
+const jsonLd = [
+  webPageNode({ type: 'CollectionPage', name: category.title, description: category.description, pageUrl: absoluteUrl(path), about: category.label }),
+  ...(episodes.length ? [itemListNode(episodes.map((episode) => ({ name: episode.data.title, url: absoluteUrl(episodePath(episode)) })))] : []),
+];
+---
+
+<BaseLayout title={category.title} description={category.description} path={path} image={ogImage('default', category.title)} crumbs={crumbs} jsonLd={jsonLd}>
+  <PageHead crumbs={crumbs} kicker={`Thème · ${category.label}`} title={category.title} lead={category.intro} compact />
+
+  <section class="section" aria-labelledby="cat-episodes">
+    <div class="container">
+      <h2 id="cat-episodes" class="section-title cat__title">Les épisodes sur ce thème</h2>
+      {
+        episodes.length > 0 ? (
+          <div class="grid grid--3">
+            {episodes.map((episode) => (
+              <EpisodeCard episode={episode} />
+            ))}
+          </div>
+        ) : upcoming.length > 0 ? (
+          <div class="grid grid--3">
+            {upcoming.map((episode) => (
+              <UpcomingCard episode={episode} />
+            ))}
+          </div>
+        ) : (
+          <EmptyEpisodes />
+        )
+      }
+    </div>
+  </section>
+
+  {
+    terms.length > 0 && (
+      <section class="section section--paper" aria-labelledby="cat-terms">
+        <div class="container">
+          <h2 id="cat-terms" class="section-title cat__title">Les mots à connaître</h2>
+          <div class="grid grid--3 cat__terms">
+            {terms.map((term, index) => (
+              <TermNote term={term} tilt={index % 2 ? 'r' : 'l'} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section" aria-labelledby="cat-others">
+    <div class="container">
+      <h2 id="cat-others" class="section-title cat__title">Les autres thèmes</h2>
+      <div class="grid grid--2">
+        {others.map((other) => <CategoryCard category={other} />)}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .cat__title {
+    margin-bottom: 1.75rem;
+  }
+
+  .cat__terms {
+    row-gap: 2.25rem;
+  }
+</style>

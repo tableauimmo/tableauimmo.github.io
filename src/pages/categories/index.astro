@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
+import CategoryCard from '../../components/CategoryCard.astro';
+import { SITE } from '../../../site.config.mjs';
+import { CATEGORY_LIST, categoryPath } from '../../data/categories.ts';
+import { getPublishedEpisodes, inCategory } from '../../lib/episodes.ts';
+import { itemListNode } from '../../lib/jsonld.ts';
+import { ogImage } from '../../lib/social.ts';
+import { absoluteUrl } from '../../lib/url.ts';
+
+const published = await getPublishedEpisodes();
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: 'Thèmes', path: '/categories/' },
+];
+const jsonLd = [itemListNode(CATEGORY_LIST.map((category) => ({ name: category.title, url: absoluteUrl(categoryPath(category.key)) })))];
+---
+
+<BaseLayout
+  title="Les thèmes de l’investissement immobilier"
+  description={`Financement, fiscalité, stratégie, marché, juridique, travaux, location, patrimoine : les 8 thèmes de ${SITE.name}, pour apprendre pas à pas.`}
+  path="/categories/"
+  image={ogImage('default', `Les thèmes de ${SITE.name}`)}
+  crumbs={crumbs}
+  jsonLd={jsonLd}
+>
+  <PageHead crumbs={crumbs} kicker="Par où commencer ?" title="Les thèmes" lead="Huit grandes familles de sujets pour comprendre un investissement immobilier de bout en bout, du crédit à la revente." />
+  <section class="section">
+    <div class="container grid grid--2">
+      {CATEGORY_LIST.map((category) => <CategoryCard category={category} count={inCategory(published, category.key).length} headingLevel="h2" />)}
+    </div>
+  </section>
+</BaseLayout>

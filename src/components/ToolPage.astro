@@ -1,0 +1,270 @@
+---
+// Gabarit commun des 4 calculateurs : formulaire + « le tableau » des résultats (calculé au build avec les
+// valeurs d'exemple, puis recalculé dans le navigateur), explication, épisode lié, FAQ, sources.
+import type { CollectionEntry } from 'astro:content';
+import { getEntries } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHead from './PageHead.astro';
+import EpisodeCard from './EpisodeCard.astro';
+import ToolCard from './ToolCard.astro';
+import Faq from './Faq.astro';
+import Sources from './Sources.astro';
+import Disclaimer from './Disclaimer.astro';
+import Icon from './Icon.astro';
+import { YOUTUBE } from '../../site.config.mjs';
+import { TOOL_LIST, toolPath, type ToolInfo } from '../data/tools.ts';
+import { forTool, getPublishedEpisodes } from '../lib/episodes.ts';
+import { faqNode, webPageNode } from '../lib/jsonld.ts';
+import type { Source } from '../lib/schemas.ts';
+import { ogImage } from '../lib/social.ts';
+import { absoluteUrl, href } from '../lib/url.ts';
+import { formatDate, isoDay } from '../lib/format.ts';
+import { displayValue, runTool, type ToolDefinition } from '../tools/shared/fields.ts';
+
+interface Props {
+  info: ToolInfo;
+  tool: ToolDefinition<any, any>;
+  lead: string;
+  faq: { q: string; a: string }[];
+  sources: Source[];
+  updated: Date;
+  terms?: string[];
+}
+
+const { info, tool, lead, faq, sources, updated, terms = [] } = Astro.props;
+const path = toolPath(info.id);
+const pageUrl = absoluteUrl(path);
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: 'Outils', path: '/outils/' },
+  { name: info.name, path },
+];
+
+const defaults = Object.fromEntries(tool.fields.map((field) => [field.name, displayValue(field, field.default)]));
+const initial = runTool(tool, defaults);
+if (!initial.ok) throw new Error(`Valeurs d'exemple invalides pour ${info.id} : ${initial.errors.map((error) => error.message).join(' ; ')}`);
+const view = tool.view(initial.result, initial.values);
+
+const linked = forTool(await getPublishedEpisodes(), info.id)[0];
+const relatedTerms = (terms.length ? await getEntries(terms.map((id) => ({ collection: 'lexique' as const, id }))) : []) as CollectionEntry<'lexique'>[];
+const others = TOOL_LIST.filter((other) => other.id !== info.id);
+
+const jsonLd = [
+  webPageNode({ name: info.title, description: info.description, pageUrl, dateModified: updated, about: info.name }),
+  faqNode(faq, pageUrl),
+];
+---
+
+<BaseLayout title={info.title} description={info.description} path={path} image={ogImage(info.ogImage as 'credit', `${info.title} — Tableau Immo`)} crumbs={crumbs} jsonLd={jsonLd} modified={updated}>
+  <PageHead crumbs={crumbs} kicker="Calculateur gratuit, sans inscription" title={info.title} lead={lead} compact />
+
+  <section class="section section--tight tool" aria-labelledby="tool-form-title">
+    <div class="container tool__grid">
+      <form class="tool__form" data-tool={info.id} novalidate>
+        <h2 id="tool-form-title" class="tool__form-title">Vos chiffres</h2>
+        <div class="tool__fields">
+          {
+            tool.fields.map((field) => (
+              <div class="field" data-field={field.name}>
+                <label class="field__label" for={`f-${field.name}`}>
+                  {field.label}
+                </label>
+                <div class="field__control">
+                  <input
+                    id={`f-${field.name}`}
+                    name={field.name}
+                    type="text"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    spellcheck="false"
+                    value={defaults[field.name]}
+                    aria-describedby={`f-${field.name}-help f-${field.name}-error`}
+                  />
+                  <span class="field__unit" aria-hidden="true">
+                    {field.unit}
+                  </span>
+                </div>
+                <p class="field__help" id={`f-${field.name}-help`}>
+                  <span class="visually-hidden">Unité : {field.unit}. </span>
+                  {field.help}
+                </p>
+                <p class="field__error" id={`f-${field.name}-error`} aria-live="polite" />
+              </div>
+            ))
+          }
+        </div>
+        <div class="tool__actions">
+          <button type="submit" class="btn btn--dark"><Icon name="calculator" size={18} /> <span>Calculer</span></button>
+          <button type="reset" class="btn btn--light">Revenir à l’exemple</button>
+        </div>
+        <noscript>
+          <p class="tool__noscript">Le calcul interactif nécessite JavaScript. Le tableau ci-contre est calculé avec les valeurs d’exemple.</p>
+        </noscript>
+      </form>
+
+      <section class="tool__result board board-panel" aria-labelledby="tool-result-title">
+        <h2 id="tool-result-title" class="visually-hidden">Résultat du calcul</h2>
+        <p class="tool__summary" data-tool-summary aria-live="polite">{view.summary}</p>
+        <div data-tool-result set:html={view.html} />
+        <p class="tool__updated">
+          Formules et règles vérifiées le <time datetime={isoDay(updated)}>{formatDate(updated)}</time>.
+        </p>
+      </section>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container content-layout">
+      <div class="content-main">
+        <div class="prose">
+          <slot />
+        </div>
+
+        <section aria-labelledby="episode-lie">
+          <h2 id="episode-lie" class="block-title">Voir l’épisode lié</h2>
+          {
+            linked ? (
+              <div class="tool__episode">
+                <EpisodeCard episode={linked} />
+              </div>
+            ) : (
+              <div class="callout callout--info">
+                <Icon name="play" size={20} />
+                <p>
+                  L’épisode qui pose ce calcul au tableau arrive bientôt.{' '}
+                  <a href={YOUTUBE.subscribeUrl} rel="noopener" target="_blank">
+                    Abonnez-vous à la chaîne
+                  </a>{' '}
+                  pour le voir dès sa sortie, ou parcourez <a href={href('/episodes/')}>les épisodes</a>.
+                </p>
+              </div>
+            )
+          }
+        </section>
+
+        <Faq items={faq} />
+        <Sources sources={sources} />
+        <Disclaimer tool ai={false} />
+      </div>
+
+      <aside class="content-side" aria-label="Pour aller plus loin">
+        {
+          relatedTerms.length > 0 && (
+            <div class="side-card">
+              <h2 class="side-card__title">Les mots du calcul</h2>
+              <ul>
+                {relatedTerms.map((term) => (
+                  <li>
+                    <a href={href(`/lexique/${term.id}/`)}>{term.data.term}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+        <div class="side-card">
+          <h2 class="side-card__title">Les autres calculateurs</h2>
+          <ul>
+            {
+              others.map((other) => (
+                <li>
+                  <a href={href(toolPath(other.id))}>{other.name}</a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section section--paper" aria-labelledby="more-tools">
+    <div class="container">
+      <h2 id="more-tools" class="section-title more-tools">Continuer le calcul</h2>
+      <div class="grid grid--3">
+        {others.map((other) => <ToolCard tool={other} />)}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .tool__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(1.5rem, 1rem + 2.5vw, 3rem);
+    align-items: start;
+  }
+
+  .tool__form {
+    position: sticky;
+    top: 1.5rem;
+    display: grid;
+    gap: 1.25rem;
+    padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .tool__form-title {
+    font-size: var(--text-lg);
+  }
+
+  .tool__fields {
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  .tool__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .tool__noscript {
+    color: var(--ink-mute);
+    font-size: var(--text-sm);
+  }
+
+  .tool__result {
+    padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+    min-width: 0;
+  }
+
+  .tool__summary {
+    margin-bottom: 1.25rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: var(--radius-sm);
+    background: rgb(242 212 92 / 0.1);
+    border: 1px solid rgb(242 212 92 / 0.35);
+    color: var(--chalk);
+    font-weight: 600;
+    font-size: var(--text-sm);
+  }
+
+  .tool__updated {
+    margin-top: 1.5rem;
+    color: var(--chalk-mute);
+    font-size: var(--text-xs);
+  }
+
+  .tool__episode {
+    max-width: 26rem;
+  }
+
+  .more-tools {
+    margin-bottom: 1.75rem;
+  }
+
+  @media (max-width: 960px) {
+    .tool__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .tool__form {
+      position: static;
+    }
+  }
+</style>

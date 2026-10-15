@@ -1,0 +1,64 @@
+---
+import Icon from './Icon.astro';
+import { formatDate } from '../lib/format.ts';
+import type { Source } from '../lib/schemas.ts';
+
+interface Props {
+  sources: Source[];
+  title?: string;
+  id?: string;
+}
+
+const { sources, title = 'Sources officielles', id = 'sources' } = Astro.props;
+const host = (url: string) => new URL(url).hostname.replace(/^www\./, '');
+---
+
+<section class="sources" aria-labelledby={`${id}-title`}>
+  <h2 id={`${id}-title`} class="block-title">{title}</h2>
+  <ol class="sources__list">
+    {
+      sources.map((source) => (
+        <li>
+          <a href={source.url} rel="noopener external" target="_blank">
+            {source.title}
+            <Icon name="external" size={14} />
+          </a>
+          <span class="sources__meta">
+            {host(source.url)}
+            {source.date && <> · consulté le {formatDate(source.date)}</>}
+          </span>
+        </li>
+      ))
+    }
+  </ol>
+</section>
+
+<style>
+  .sources__list {
+    display: grid;
+    gap: 0.7rem;
+    margin: 0;
+    padding-left: 1.4rem;
+  }
+
+  .sources__list li::marker {
+    color: var(--ink-mute);
+    font-weight: 700;
+  }
+
+  .sources__list a {
+    font-weight: 650;
+  }
+
+  .sources__list a :global(svg) {
+    display: inline;
+    margin-left: 0.2rem;
+    vertical-align: -0.1em;
+  }
+
+  .sources__meta {
+    display: block;
+    color: var(--ink-mute);
+    font-size: var(--text-xs);
+  }
+</style>

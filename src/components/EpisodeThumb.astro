@@ -1,0 +1,66 @@
+---
+// Vignette d'épisode : miniature locale optimisée, sinon miniature YouTube, sinon un petit tableau à la craie.
+import { Image } from 'astro:assets';
+import type { Episode } from '../lib/episodes.ts';
+import { youtubeThumbnailUrl } from '../lib/youtube.ts';
+
+interface Props {
+  episode: Episode;
+  eager?: boolean;
+  sizes?: string;
+}
+
+const { episode, eager = false, sizes = '(min-width: 1200px) 380px, (min-width: 700px) 45vw, 92vw' } = Astro.props;
+const { data } = episode;
+---
+
+{
+  data.thumbnail ? (
+    <Image
+      src={data.thumbnail}
+      alt=""
+      widths={[400, 640, 960]}
+      sizes={sizes}
+      class="thumb"
+      loading={eager ? 'eager' : 'lazy'}
+      fetchpriority={eager ? 'high' : 'auto'}
+    />
+  ) : data.youtubeId ? (
+    <img src={youtubeThumbnailUrl(data.youtubeId)} alt="" width="480" height="360" class="thumb" loading={eager ? 'eager' : 'lazy'} decoding="async" />
+  ) : (
+    <div class="thumb thumb--chalk board" aria-hidden="true">
+      <span class="thumb__number">Épisode {data.number}</span>
+      <span class="thumb__title">{data.title}</span>
+    </div>
+  )
+}
+
+<style>
+  .thumb {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    background: var(--slate);
+  }
+
+  .thumb--chalk {
+    display: grid;
+    align-content: center;
+    gap: 0.35rem;
+    padding: 1rem 1.25rem;
+  }
+
+  .thumb__number {
+    color: var(--yellow);
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .thumb__title {
+    font-family: var(--font-hand);
+    font-size: 1.3rem;
+    line-height: 1.2;
+    color: var(--chalk);
+  }
+</style>

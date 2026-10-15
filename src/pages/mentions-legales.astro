@@ -1,0 +1,62 @@
+---
+import TextPage from '../components/TextPage.astro';
+import { SITE } from '../../site.config.mjs';
+import { LEGAL } from '../data/legal.ts';
+import { ogImage } from '../lib/social.ts';
+import { href } from '../lib/url.ts';
+---
+
+<TextPage
+  title="Mentions légales"
+  heading="Mentions légales"
+  description={`Mentions légales du site ${SITE.name} : éditeur, contact, hébergement (GitHub Pages), propriété intellectuelle et responsabilité.`}
+  path="/mentions-legales/"
+  image={ogImage('default', `Mentions légales de ${SITE.name}`)}
+  updated={LEGAL.updated}
+>
+  <h2>Éditeur</h2>
+  <p>
+    Le site est édité par <strong>{SITE.name}</strong>, éditeur non professionnel. Conformément à l’article 1-1, II, de la loi n° 2004-575 du 21 juin 2004 pour
+    la confiance dans l’économie numérique, l’éditeur a choisi de ne pas rendre publique son identité ; ses coordonnées personnelles ont été communiquées à
+    l’hébergeur.
+  </p>
+  <p>Contact : <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a></p>
+
+  <h2>Hébergement</h2>
+  <p>
+    {LEGAL.host.name}<br />
+    {LEGAL.host.address}<br />
+    <a href={LEGAL.host.url} rel="noopener">{LEGAL.host.url.replace('https://', '')}</a>
+  </p>
+
+  <h2>Nature des contenus</h2>
+  <p>
+    Les vidéos, pages, calculateurs et définitions de {SITE.name} sont des <strong>contenus pédagogiques et d’information générale</strong>. Ils ne constituent
+    ni un conseil en investissement, ni un conseil juridique, fiscal ou financier personnalisé, et ne sauraient remplacer l’avis d’un professionnel habilité
+    (notaire, avocat, expert-comptable, conseiller en investissements financiers, intermédiaire en opérations de banque). Les exemples chiffrés sont des cas
+    d’école. Tout investissement comporte des risques, dont la perte en capital, et les performances passées ne préjugent pas des performances futures.
+  </p>
+  <p>
+    Les informations sont vérifiées à la date indiquée sur chaque page ; la réglementation pouvant évoluer, l’éditeur ne peut garantir qu’elles sont à jour à
+    la date de votre lecture. Signalez toute erreur via la page <a href={href('/contact/')}>contact</a>.
+  </p>
+
+  <h2>Intelligence artificielle</h2>
+  <p>Les illustrations et la voix des vidéos sont générées avec l’aide d’outils d’intelligence artificielle ; le contenu est vérifié et sourcé avant publication.</p>
+
+  <h2>Propriété intellectuelle</h2>
+  <p>
+    L’ensemble des contenus du site (textes, tableaux, illustrations, vidéos, logo, code des calculateurs) est protégé par le droit d’auteur. Toute reproduction ou
+    réutilisation, totale ou partielle, sans autorisation écrite est interdite, à l’exception des courtes citations accompagnées d’un lien vers la page d’origine.
+    Les polices de caractères (Inter, Cabin Sketch, Kalam) sont distribuées sous licence SIL Open Font License 1.1.
+  </p>
+
+  <h2>Liens</h2>
+  <p>
+    Les liens vers des sites officiels sont fournis à titre de source. {SITE.name} n’a aucun lien commercial avec les sites cités et n’est pas responsable de
+    leur contenu. Le site ne contient ni publicité ni lien d’affiliation.
+  </p>
+
+  <h2>Données personnelles</h2>
+  <p>Voir la page <a href={href('/confidentialite/')}>Confidentialité</a>.</p>
+</TextPage>

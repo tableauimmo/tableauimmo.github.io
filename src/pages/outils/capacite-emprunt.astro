@@ -1,0 +1,71 @@
+---
+import ToolPage from '../../components/ToolPage.astro';
+import { TOOLS } from '../../data/tools.ts';
+import { href } from '../../lib/url.ts';
+import { capacityTool } from '../../tools/capacite/tool.ts';
+
+const faq = [
+  {
+    q: 'La règle des 35 % inclut-elle l’assurance emprunteur ?',
+    a: 'Oui. Le taux d’effort retenu par le Haut Conseil de stabilité financière rapporte l’ensemble des charges d’emprunt, assurance comprise, aux revenus nets avant impôt de l’emprunteur.',
+  },
+  {
+    q: 'Une banque peut-elle prêter au-delà de 35 % ou sur plus de 25 ans ?',
+    a: 'Oui, mais de façon encadrée : chaque trimestre, jusqu’à 20 % des crédits immobiliers accordés peuvent déroger aux critères. Cette marge est réservée en grande partie aux achats de résidence principale, notamment aux primo-accédants. Une durée de 27 ans est possible avec un différé de 2 ans (logement neuf ou travaux).',
+  },
+  {
+    q: 'Pourquoi les loyers ne sont-ils retenus qu’à 70 % ?',
+    a: 'C’est une pratique courante des banques pour tenir compte de la vacance, des impayés et des charges. Elle n’est pas fixée par le HCSF : certaines banques retiennent un autre pourcentage ou calculent un « différentiel » entre loyers et mensualités. Le calculateur applique la convention la plus répandue.',
+  },
+  {
+    q: 'Le montant affiché est-il ce que la banque me prêtera ?',
+    a: 'Non : c’est un plafond théorique. La banque étudie aussi l’apport, le reste à vivre, la stabilité des revenus, la tenue des comptes, l’épargne et la qualité du projet. Seule une offre de prêt écrite engage l’établissement.',
+  },
+];
+
+const sources = [
+  { title: 'Décision du HCSF du 29 septembre 2021 relative aux conditions d’octroi de crédits immobiliers — Légifrance', url: 'https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000044178669', date: new Date('2026-10-15') },
+  { title: 'Mesure relative à l’octroi des crédits immobiliers — Haut Conseil de stabilité financière', url: 'https://www.economie.gouv.fr/hcsf-en/measures/measure-relating-granting-mortgages', date: new Date('2026-10-15') },
+  { title: 'Crédit immobilier : comment ça marche ? — economie.gouv.fr', url: 'https://www.economie.gouv.fr/particuliers/gerer-mon-argent/emprunter-et-sassurer/credit-immobilier-comment-ca-marche', date: new Date('2026-10-15') },
+];
+---
+
+<ToolPage
+  info={TOOLS.capacite}
+  tool={capacityTool}
+  lead="Revenus, crédits en cours, taux et durée : le calcul applique la règle du Haut Conseil de stabilité financière (35 % d’endettement assurance comprise, 25 ans) et montre chaque étape."
+  faq={faq}
+  sources={sources}
+  updated={new Date('2026-10-15')}
+  terms={['taux-d-endettement', 'hcsf', 'apport', 'effet-de-levier']}
+>
+  <h2>La règle du HCSF en deux chiffres</h2>
+  <p>
+    Depuis le 1<sup>er</sup> janvier 2022, une décision du Haut Conseil de stabilité financière (HCSF) s’impose aux banques : le <strong>taux d’effort</strong>
+    d’un emprunteur (ses charges de crédit, assurance comprise, divisées par ses revenus nets avant impôt) ne doit pas dépasser <strong>35 %</strong>, et la
+    durée du crédit ne doit pas dépasser <strong>25 ans</strong> (27 ans avec un différé lié à un achat dans le neuf ou à des travaux). Les banques peuvent
+    déroger à ces critères pour 20 % de leurs crédits accordés chaque trimestre.
+  </p>
+  <h2>Le calcul, étape par étape</h2>
+  <ol>
+    <li>Les <strong>revenus retenus</strong> : vos revenus nets mensuels avant impôt, plus 70 % des loyers déjà perçus.</li>
+    <li>La <strong>mensualité maximale</strong> : 35 % de ces revenus, toutes charges de crédit comprises.</li>
+    <li>La <strong>mensualité disponible</strong> : ce plafond moins les mensualités des crédits en cours.</li>
+    <li>
+      Le <strong>capital empruntable</strong> : la mensualité disponible divisée par ce que coûte, chaque mois, 1 € emprunté (intérêts et capital via la
+      formule de la mensualité, plus l’assurance).
+    </li>
+  </ol>
+  <p>
+    Pour vérifier la mensualité d’un montant précis, utilisez le <a href={href('/outils/mensualite-credit-immobilier/')}>calculateur de mensualité</a>. Pour
+    un investissement locatif, le futur loyer n’entre pas dans ce calcul : la banque l’ajoute en général à 70 % aux revenus, ce que vous pouvez simuler dans le
+    champ « Loyers ».
+  </p>
+</ToolPage>
+
+<script>
+  import { mountTool } from '../../tools/shared/ui.ts';
+  import { capacityTool } from '../../tools/capacite/tool.ts';
+
+  mountTool(capacityTool);
+</script>
