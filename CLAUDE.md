@@ -8,7 +8,7 @@ Spécificités de ce projet (s'ajoutent aux règles globales, ne les remplacent 
   conseil personnalisé, risques toujours mentionnés, aucun rendement promis.
 - Dossier `studio/` : dépôt **privé** séparé (moteur vidéo, voix, rendus), ignoré par Git. Ne rien y modifier ; seule
   la spécification commune `studio/TableauImmo_Studio/SPEC_COMMUNE.md` se lit (§0 identité, §2 identité visuelle).
-- Design : tableau noir (ardoise `#1C2321`/`#26302D`), craie `#EDEDE6`, jaune `#F2D45C` (chiffres clés, appels à
+- Design : tableau **noir** (`#141516`/`#222325`, jamais vert), craie `#EDEDE6`, jaune `#F2D45C` (chiffres clés, appels à
   l'action), papier `#F3EBDD` + scotch (notes), orange `#EE8A5B` (mises en garde). Cabin Sketch pour un seul grand titre
   par page, Kalam pour les annotations, Inter pour tout le reste. Animations neutralisées si l'appareil demande moins
   de mouvement. Contraste AA partout (jaune jamais en texte sur fond clair : surligneur `.marker` à la place).

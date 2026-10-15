@@ -42,7 +42,7 @@ export const SITE = Object.freeze({
   tagline: "L'investissement immobilier en France, expliqué au tableau.",
   locale: 'fr-FR',
   language: 'fr',
-  themeColor: '#1C2321',
+  themeColor: '#141516',
   contactEmail: 'tableauimmo@gmail.com',
   /** Auteur des commits automatiques (synchro YouTube). */
   gitAuthor: Object.freeze({ name: 'Tableau Immo', email: 'tableauimmo@gmail.com' }),

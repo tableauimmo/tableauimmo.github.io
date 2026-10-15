@@ -1,11 +1,11 @@
 /* Tableau Immo — identité « tableau noir », sobre et premium.
-   Ardoise (#1C2321 / #26302D) pour les en-têtes et les tableaux, craie blanche, craie jaune pour les chiffres clés
+   Tableau noir (#141516 / #222325, jamais vert) pour les en-têtes et les tableaux, craie blanche, craie jaune pour les chiffres clés
    et les appels à l'action, papier (#F3EBDD) + scotch pour les notes, orange pour les mises en garde.
    Cabin Sketch : grands titres seulement (un par page). Kalam : annotations manuscrites. Inter : tout le reste. */
 
 :root {
-  --slate: #1c2321;
-  --slate-2: #26302d;
+  --slate: #141516;
+  --slate-2: #222325;
   --slate-3: #34413d;
   --slate-deep: #141a18;
   --chalk: #edede6;
@@ -28,7 +28,7 @@
 
   --bg: #f7f4ee;
   --surface: #ffffff;
-  --ink: #1c2321;
+  --ink: #141516;
   --ink-soft: #39443f;
   --ink-mute: #59645f;
   --line: #e2dccf;

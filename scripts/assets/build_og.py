@@ -24,8 +24,8 @@ KALAM = FONTS / "@fontsource/kalam/files/kalam-latin-400-normal.woff"
 KALAM_BOLD = FONTS / "@fontsource/kalam/files/kalam-latin-700-normal.woff"
 INTER = FONTS / "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2"
 
-SLATE = (28, 35, 33)
-SLATE_2 = (38, 48, 45)
+SLATE = (20, 21, 22)
+SLATE_2 = (34, 35, 37)
 CHALK = (237, 237, 230)
 YELLOW = (242, 212, 92)
 WOOD = (107, 85, 65)
@@ -224,7 +224,7 @@ def build_icons() -> None:
     mark(256).save(PUBLIC / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
     (PUBLIC / "favicon.svg").write_text(
         """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
-  <rect x="1.75" y="1.75" width="36.5" height="36.5" rx="7" fill="#26302d" stroke="#7a6149" stroke-width="3.5"/>
+  <rect x="1.75" y="1.75" width="36.5" height="36.5" rx="7" fill="#222325" stroke="#7a6149" stroke-width="3.5"/>
   <path d="M10.5 20.5 20 12.2l9.5 8.3" fill="none" stroke="#edede6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M13.4 18.6v8.9h13.2v-8.9" fill="none" stroke="#edede6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M18 27.5v-4.4h4v4.4" fill="none" stroke="#edede6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

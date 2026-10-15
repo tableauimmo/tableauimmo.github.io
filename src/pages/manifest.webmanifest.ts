@@ -11,7 +11,7 @@ export const GET: APIRoute = () => {
     start_url: href('/'),
     scope: href('/'),
     display: 'standalone',
-    background_color: '#1c2321',
+    background_color: '#141516',
     theme_color: SITE.themeColor,
     categories: ['education', 'finance'],
     icons: [
