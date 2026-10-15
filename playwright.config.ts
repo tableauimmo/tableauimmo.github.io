@@ -37,13 +37,13 @@ export default defineConfig({
     ? []
     : [
         {
-          command: `npx astro preview --port ${SITE_PORT} --host 127.0.0.1`,
+          command: `npx astro preview --ignore-lock --port ${SITE_PORT} --host 127.0.0.1`,
           url: `http://127.0.0.1:${SITE_PORT}/`,
           reuseExistingServer: !process.env.CI,
           timeout: 60_000,
         },
         {
-          command: `npx astro preview --outDir dist-fixture --port ${FIXTURE_PORT} --host 127.0.0.1`,
+          command: `npx astro preview --ignore-lock --outDir dist-fixture --port ${FIXTURE_PORT} --host 127.0.0.1`,
           url: `http://127.0.0.1:${FIXTURE_PORT}/`,
           reuseExistingServer: !process.env.CI,
           timeout: 60_000,

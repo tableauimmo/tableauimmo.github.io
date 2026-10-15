@@ -17,7 +17,7 @@ Spécificités de ce projet (s'ajoutent aux règles globales, ne les remplacent 
 - Vérification complète avant de dire « fini » : `npm run verify` (types, unitaires, bout en bout).
 - Le serveur de prévisualisation (`.claude/launch.json`, port 4321) sert `dist/` : relancer `npm run build` après une
   modification. Site de démonstration avec épisodes : `npm run build:fixture` puis
-  `npx astro preview --outDir dist-fixture --port 4322`.
+  `npx astro preview --ignore-lock --outDir dist-fixture --port 4322` (Astro 7 : `--ignore-lock` pour deux aperçus en même temps).
 - Contrôle visuel : `npm run screens -- <chemins>` (ordinateur 1440 px et mobile 390 px, signale tout débordement
   horizontal), puis regarder les images de `.screens/`.
 
