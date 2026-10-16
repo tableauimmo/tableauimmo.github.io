@@ -13,6 +13,7 @@
 //   YOUTUBE_API_KEY  durée exacte et description complète des vidéos
 //   TI_EPISODES_DIR  dossier des épisodes (défaut : src/content/episodes)
 //   GITHUB_OUTPUT    (CI) reçoit « changed=true|false »
+//   TI_SANS_CHAINE   (tests) fait comme si YOUTUBE.channelId était vide
 import { appendFile, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
@@ -60,7 +61,8 @@ async function enrich(videos: FeedVideo[]): Promise<VideoInfo[]> {
 }
 
 async function main(): Promise<void> {
-  const source = args.feed ?? YOUTUBE.feedUrl;
+  // TI_SANS_CHAINE=1 simule une chaîne non configurée (tests).
+  const source = args.feed ?? (process.env.TI_SANS_CHAINE ? null : YOUTUBE.feedUrl);
   if (!source) {
     console.log('ℹ︎ Synchronisation YouTube désactivée : YOUTUBE.channelId est vide dans site.config.mjs. Rien à faire.');
     await reportChanged(false);

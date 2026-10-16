@@ -33,3 +33,6 @@ visibilite/geo/*
 !visibilite/historique/.gitkeep
 !visibilite/rapports/.gitkeep
 !visibilite/geo/.gitkeep
+
+# Transferts temporaires (gros fichiers)
+/_transfert/

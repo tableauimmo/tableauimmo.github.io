@@ -95,7 +95,10 @@ describe('publication d’une fiche', () => {
   });
 
   it('sans identifiant de chaîne, la synchro s’arrête proprement', () => {
-    const run = spawnSync(process.execPath, ['scripts/youtube-sync.ts', '--episodes-dir', 'tests/fixtures/episodes'], { encoding: 'utf8' });
+    const run = spawnSync(process.execPath, ['scripts/youtube-sync.ts', '--episodes-dir', 'tests/fixtures/episodes'], {
+      encoding: 'utf8',
+      env: { ...process.env, TI_SANS_CHAINE: '1' },
+    });
     expect(run.status).toBe(0);
     expect(run.stdout).toContain('YOUTUBE.channelId est vide');
   });

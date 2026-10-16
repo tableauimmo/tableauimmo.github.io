@@ -58,8 +58,8 @@ export const VIDEO_EMBED = 'facade';
 /** Chaîne YouTube. channelId vide = synchronisation désactivée (le script s'arrête proprement). */
 export const YOUTUBE = Object.freeze({
   /** Identifiant « UC… » de la chaîne (YouTube Studio → Paramètres → Chaîne → Paramètres avancés). */
-  channelId: '',
-  handle: '@TableauImmo',
+  channelId: 'UCxmGv1tfgXC-Ysbx2_M1Xlg',
+  handle: '@tableauimmo',
   get channelUrl() {
     return this.channelId ? `https://www.youtube.com/channel/${this.channelId}` : `https://www.youtube.com/${this.handle}`;
   },
@@ -77,10 +77,10 @@ export const YOUTUBE = Object.freeze({
  * mais n'est pas déclaré aux moteurs (sameAs des données structurées). Passer à true une fois le compte créé.
  */
 export const SOCIAL = Object.freeze([
-  { id: 'youtube', label: 'YouTube', url: YOUTUBE.subscribeUrl, verified: false },
-  { id: 'tiktok', label: 'TikTok', url: 'https://www.tiktok.com/@tableauimmo', verified: false },
-  { id: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/tableauimmo/', verified: false },
+  { id: 'youtube', label: 'YouTube', url: YOUTUBE.subscribeUrl, verified: true },
+  { id: 'tiktok', label: 'TikTok', url: 'https://www.tiktok.com/@tableauimmo', verified: true },
+  { id: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/tableauimmo/', verified: true },
   { id: 'facebook', label: 'Facebook', url: 'https://www.facebook.com/tableauimmo', verified: false },
   { id: 'linkedin', label: 'LinkedIn', url: 'https://www.linkedin.com/company/tableauimmo/', verified: false },
-  { id: 'x', label: 'X', url: 'https://x.com/tableauimmo', verified: false },
+  { id: 'x', label: 'X', url: 'https://x.com/Tableauimmo', verified: true },
 ]);
