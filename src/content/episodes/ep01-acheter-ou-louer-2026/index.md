@@ -2,9 +2,8 @@
 number: 1
 title: "Acheter ou louer : le vrai calcul"
 slug: acheter-ou-louer-2026
-status: upcoming
-updatedAt: 2026-10-15
-duration: PT9M56S
+status: published
+duration: PT10M22S
 summary: Acheter ou louer ? Avec un crédit à 3,66 %, notre cas d'école ne rend l'achat gagnant qu'après 14 ans. Le calcul complet.
 teaser: Dans notre cas d'école (T3 à 250 000 € ou 1 000 €/mois), l'achat passe devant la location au bout de 14 ans, avec des prix en hausse de 1,5 % par an.
 category: strategie
@@ -124,6 +123,8 @@ terms:
   - apport
   - plus-value-immobiliere
 thumbnail: ./thumbnail.jpg
+youtubeId: UE2VBWa3im4
+publishedAt: 2026-10-16T06:30:00.000Z
 ---
 
 ## La réponse courte

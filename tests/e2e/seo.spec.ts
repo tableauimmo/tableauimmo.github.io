@@ -1,4 +1,6 @@
 // Référencement (SEO) et moteurs de réponse (GEO) sur le site réel.
+import { readdirSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 import { expect, test } from '@playwright/test';
 import { SITE } from '../../site.config.mjs';
 import { jsonLd, nodesOfType } from './helpers.ts';
@@ -142,9 +144,38 @@ const ALLOWED_HOSTS = [
   'github.com',
 ];
 
+/**
+ * Domaines des sources citées dans les fiches d'épisodes (champ `sources`, relu et daté à l'écriture) : une source
+ * déclarée est un lien légitime. Lu dans les fichiers, pour que ce test ne dépende pas des épisodes publiés.
+ */
+function episodeSourceHosts(): string[] {
+  const dir = path.resolve('src/content/episodes');
+  let folders: string[] = [];
+  try {
+    folders = readdirSync(dir, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+  } catch {
+    return [];
+  }
+  const hosts = new Set<string>();
+  for (const folder of folders) {
+    let text = '';
+    try {
+      text = readFileSync(path.join(dir, folder, 'index.md'), 'utf8');
+    } catch {
+      continue;
+    }
+    const frontmatter = text.split(/^---$/m)[1] ?? '';
+    const sources = frontmatter.split(/^sources:\s*$/m)[1]?.split(/^\S/m)[0] ?? '';
+    for (const [, url] of sources.matchAll(/^\s+url:\s*(https:\/\/\S+)/gm)) hosts.add(new URL(url ?? '').hostname.replace(/^www\./, ''));
+  }
+  return [...hosts];
+}
+
+const SOURCE_HOSTS = episodeSourceHosts();
+
 function allowedHost(url: string): boolean {
   const host = new URL(url).hostname.replace(/^www\./, '');
-  return ALLOWED_HOSTS.some((allowed) => host === allowed || host.endsWith(`.${allowed}`));
+  return [...ALLOWED_HOSTS, ...SOURCE_HOSTS].some((allowed) => host === allowed || host.endsWith(`.${allowed}`));
 }
 
 test('aucun lien vers un site étranger à la chaîne (réseaux, sources officielles, hébergeur seulement)', async ({ page }) => {

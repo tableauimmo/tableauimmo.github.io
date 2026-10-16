@@ -71,7 +71,20 @@ async function main(): Promise<void> {
   console.log(`Flux : ${source}`);
   console.log(`Épisodes : ${episodesDir}${dryRun ? ' (simulation)' : ''}`);
 
-  const videos = parseFeed(await readFeed(source));
+  let feedText: string;
+  try {
+    feedText = await readFeed(source);
+  } catch (error) {
+    // Une chaîne toute neuve : YouTube répond 404 sur son flux pendant quelques heures ou jours. Ce n'est pas une
+    // panne : on réessaiera à la prochaine synchro horaire (publier une fiche à la main reste possible avec --feed).
+    if (/^https?:\/\//.test(source) && error instanceof Error && /HTTP 404/.test(error.message)) {
+      console.log('ℹ︎ Flux de la chaîne pas encore servi par YouTube (404) : rien à faire pour cette fois.');
+      await reportChanged(false);
+      return;
+    }
+    throw error;
+  }
+  const videos = parseFeed(feedText);
   const episodes = await loadEpisodes(episodesDir);
   const known = new Set(episodes.map((episode) => episode.frontmatter.youtubeId).filter(Boolean));
 
