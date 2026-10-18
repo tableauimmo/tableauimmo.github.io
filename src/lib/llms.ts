@@ -3,6 +3,7 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import { SITE, SOCIAL, YOUTUBE } from '../../site.config.mjs';
 import { CATEGORIES, CATEGORY_LIST, categoryPath } from '../data/categories.ts';
 import { TOOL_LIST, toolPath } from '../data/tools.ts';
+import { episodeLabel } from './episode-label.ts';
 import { episodePath, getPublishedEpisodes, lastUpdated, type PublishedEpisode } from './episodes.ts';
 import { collator, isoDay } from './format.ts';
 import type { Tableau } from './schemas.ts';
@@ -32,7 +33,7 @@ export function tableauMarkdown(tableau: Tableau): string {
 }
 
 export function episodeLine(episode: PublishedEpisode): string {
-  return `- [Épisode ${episode.data.number} : ${episode.data.title}](${absoluteUrl(episodePath(episode))}) (${CATEGORIES[episode.data.category].label}, publié le ${isoDay(episode.data.publishedAt)}) : ${episode.data.summary}`;
+  return `- [${episodeLabel(episode.data)} : ${episode.data.title}](${absoluteUrl(episodePath(episode))}) (${CATEGORIES[episode.data.category].label}, publié le ${isoDay(episode.data.publishedAt)}) : ${episode.data.summary}`;
 }
 
 export async function llmsSummary(): Promise<string> {
@@ -77,7 +78,7 @@ export async function llmsFull(): Promise<string> {
   for (const episode of episodes) {
     const { data } = episode;
     parts.push(
-      `### Épisode ${data.number} : ${data.title}`,
+      `### ${episodeLabel(data)} : ${data.title}`,
       '',
       `URL : ${absoluteUrl(episodePath(episode))} — vidéo : https://www.youtube.com/watch?v=${data.youtubeId}`,
       `Thème : ${CATEGORIES[data.category].label} — publié le ${isoDay(data.publishedAt)} — mis à jour le ${isoDay(lastUpdated(episode))}`,

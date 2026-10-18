@@ -109,7 +109,7 @@ async function main(): Promise<void> {
     const prepared = matchUpcoming(video, episodes);
     if (!prepared) {
       console.log(`⚠︎ Vidéo sans fiche préparée, non publiée sur le site : « ${video.title} » (${video.youtubeId})`);
-      console.log('  ↳ Créer la fiche : npm run episode:add -- <studio>/publication/site_episode.json --youtube ' + video.youtubeId);
+      console.log('  ↳ Créer la fiche : npm run episode:add -- <studio>/publication/site_ready.json --youtube ' + video.youtubeId);
       continue;
     }
     const file = publishUpcoming(prepared, video);

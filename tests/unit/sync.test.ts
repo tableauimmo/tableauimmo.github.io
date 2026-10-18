@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { parseFeed } from '../../scripts/lib/feed.ts';
 import { episodeNumberIn, loadEpisodes, matchUpcoming, parseEpisodeFile, publishUpcoming, serializeEpisode, type EpisodeFile } from '../../scripts/lib/store.ts';
 import { parseStudioEpisode, studioToEpisodeFile } from '../../scripts/lib/studio.ts';
+import { episodeLabel, episodeLabelLower } from '../../src/lib/episode-label.ts';
 import { episodeFileSchema } from '../../src/lib/schemas.ts';
 
 const upcoming = (number: number, title: string, slug = `ep-${number}`): EpisodeFile => ({
@@ -104,7 +105,7 @@ describe('publication d’une fiche', () => {
   });
 });
 
-describe('ajout d’un épisode depuis le studio (site_episode.json)', () => {
+describe('ajout d’un épisode depuis le studio (site_ready.json)', () => {
   const studio = {
     number: 4,
     slug: 'sci-is-ou-ir',
@@ -135,6 +136,17 @@ describe('ajout d’un épisode depuis le studio (site_episode.json)', () => {
     expect(() => parseStudioEpisode({ ...studio, summary: 'court', category: 'crypto' })).toThrow(/summary[\s\S]*category/);
   });
 
+  it('numéro spécial : dossier hsNN, libellé « Numéro spécial n° 1 », numérotation réservée au-delà de 100', () => {
+    const file = studioToEpisodeFile(parseStudioEpisode({ ...studio, number: 101, special: true, slug: 'grand-dossier-sci' }), '/tmp/episodes', {});
+    expect(file.folder).toBe('hs01-grand-dossier-sci');
+    expect(file.frontmatter).toMatchObject({ number: 101, special: true });
+    expect(episodeLabel({ number: 101, special: true })).toBe('Numéro spécial n° 1');
+    expect(episodeLabel({ number: 4 })).toBe('Épisode 4');
+    expect(episodeLabelLower({ number: 102, special: true })).toBe('numéro spécial n° 2');
+    expect(() => studioToEpisodeFile(parseStudioEpisode({ ...studio, special: true }), '/tmp/episodes', {})).toThrow(/numéro spécial/);
+    expect(() => studioToEpisodeFile(parseStudioEpisode({ ...studio, number: 101 }), '/tmp/episodes', {})).toThrow(/réservé aux numéros spéciaux/);
+  });
+
   it('commande complète : copie la miniature et refuse d’écraser sans --force', async () => {
     const work = await mkdtemp(path.join(tmpdir(), 'ti-add-'));
     const publication = path.join(work, 'ep04_sci-is-ou-ir', 'publication');
@@ -155,5 +167,16 @@ describe('ajout d’un épisode depuis le studio (site_episode.json)', () => {
     expect(updated?.frontmatter).toMatchObject({ status: 'published', youtubeId: 'TIfixture04', publishedAt: '2026-10-20T12:00:00.000Z' });
     // La date de mise à jour (15/10) précède la publication (20/10) : elle est retirée.
     expect(updated?.frontmatter.updatedAt).toBeUndefined();
+    // --force ne doit jamais écraser la page publiée d'une autre vidéo (ex. un numéro spécial mal numéroté).
+    await writeFile(path.join(publication, 'site_ready.json'), JSON.stringify({ ...studio, slug: 'autre-sujet' }));
+    const other = add('--force');
+    expect(other.status).toBe(1);
+    expect(other.stderr).toMatch(/page publiée ep04-sci-is-ou-ir/);
+    expect(existsSync(path.join(episodesDir, 'ep04-sci-is-ou-ir', 'index.md'))).toBe(true);
+    // Le brouillon éditorial du studio est refusé avec la commande à lancer.
+    await writeFile(path.join(publication, 'site_ready.json'), JSON.stringify({ episode: 'ep04', slug: 'sci-is-ou-ir' }));
+    const draft = add();
+    expect(draft.status).toBe(1);
+    expect(draft.stderr).toMatch(/site_export\.py/);
   });
 });

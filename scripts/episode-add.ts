@@ -1,10 +1,12 @@
-// Crée (ou met à jour) la fiche d'un épisode à partir du fichier produit par le studio :
+// Crée (ou met à jour) la fiche d'un épisode à partir du fichier produit par le studio
+// (`python3 tools/site_export.py episodes/<ep>` dans studio/TableauImmo_Studio écrit publication/site_ready.json) :
 //
-//   npm run episode:add -- studio/TableauImmo_Studio/episodes/ep01_mon-sujet/publication/site_episode.json
-//   npm run episode:add -- <dossier de l'épisode du studio>          # cherche publication/site_episode.json
+//   npm run episode:add -- studio/TableauImmo_Studio/episodes/ep01_mon-sujet/publication/site_ready.json
+//   npm run episode:add -- <dossier de l'épisode du studio>          # cherche publication/site_ready.json
 //
 // Options :
-//   --force                 remplace une fiche existante (même numéro ou même slug), en gardant ses infos YouTube
+//   --force                 remplace la fiche de la même vidéo (même numéro et même slug), en gardant ses infos
+//                           YouTube ; refuse de remplacer une page publiée d'une autre vidéo
 //   --youtube <lien|id>     publie tout de suite (sans attendre la synchro horaire) ; avec --date AAAA-MM-JJ
 //   --episodes-dir <dir>    dossier des fiches (défaut : src/content/episodes)
 //
@@ -31,11 +33,11 @@ const { values: args, positionals } = parseArgs({
 async function resolveJson(input: string): Promise<string> {
   const resolved = path.resolve(input);
   if ((await stat(resolved)).isDirectory()) {
-    for (const candidate of ['publication/site_episode.json', 'site_episode.json']) {
+    for (const candidate of ['publication/site_ready.json', 'site_ready.json', 'publication/site_episode.json', 'site_episode.json']) {
       const file = path.join(resolved, candidate);
       if (existsSync(file)) return file;
     }
-    throw new Error(`Aucun site_episode.json dans ${input} (attendu : publication/site_episode.json)`);
+    throw new Error(`Aucun site_ready.json dans ${input} (attendu : publication/site_ready.json, écrit par tools/site_export.py du studio)`);
   }
   return resolved;
 }
@@ -51,14 +53,23 @@ function publication(): Publication | undefined {
 
 async function main(): Promise<void> {
   const input = positionals[0];
-  if (!input) throw new Error('Usage : npm run episode:add -- <site_episode.json | dossier de l’épisode du studio> [--force] [--youtube <lien> --date AAAA-MM-JJ]');
+  if (!input) throw new Error('Usage : npm run episode:add -- <site_ready.json | dossier de l’épisode du studio> [--force] [--youtube <lien> --date AAAA-MM-JJ]');
   const jsonFile = await resolveJson(input);
-  const studio = parseStudioEpisode(JSON.parse(await readFile(jsonFile, 'utf8')), path.relative(process.cwd(), jsonFile));
+  const raw: unknown = JSON.parse(await readFile(jsonFile, 'utf8'));
+  if (raw && typeof raw === 'object' && 'episode' in raw && !('number' in raw)) {
+    throw new Error(`${path.relative(process.cwd(), jsonFile)} est le brouillon éditorial du studio, pas le fichier du site : lancer d’abord « python3 tools/site_export.py episodes/<ep> » dans studio/TableauImmo_Studio, puis donner publication/site_ready.json.`);
+  }
+  const studio = parseStudioEpisode(raw, path.relative(process.cwd(), jsonFile));
 
   const episodesDir = path.resolve(args['episodes-dir'] ?? process.env.TI_EPISODES_DIR ?? 'src/content/episodes');
   const existing = (await loadEpisodes(episodesDir)).filter((episode) => episode.frontmatter.number === studio.number || episode.frontmatter.slug === studio.slug);
   if (existing.length && !args.force) {
     throw new Error(`Une fiche existe déjà (${existing.map((episode) => episode.folder).join(', ')}). Relancer avec --force pour la remplacer.`);
+  }
+  // --force ne sert qu'à mettre à jour la fiche de la même vidéo : jamais à écraser la page publiée d'une autre.
+  const otherPublished = existing.filter((episode) => episode.frontmatter.status === 'published' && (episode.frontmatter.number !== studio.number || episode.frontmatter.slug !== studio.slug));
+  if (otherPublished.length) {
+    throw new Error(`Refus : cela remplacerait la page publiée ${otherPublished.map((episode) => episode.folder).join(', ')} (autre numéro ou autre slug). Vérifier « number » (numéro spécial : 100 + n) et « slug ».`);
   }
   const previous = existing[0];
 

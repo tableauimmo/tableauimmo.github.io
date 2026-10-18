@@ -1,6 +1,7 @@
 ---
 // Vignette d'épisode : miniature locale optimisée, sinon miniature YouTube, sinon un petit tableau à la craie.
 import { Image } from 'astro:assets';
+import { episodeLabel } from '../lib/episode-label.ts';
 import type { Episode } from '../lib/episodes.ts';
 import { youtubeThumbnailUrl } from '../lib/youtube.ts';
 
@@ -29,7 +30,7 @@ const { data } = episode;
     <img src={youtubeThumbnailUrl(data.youtubeId)} alt="" width="480" height="360" class="thumb" loading={eager ? 'eager' : 'lazy'} decoding="async" />
   ) : (
     <div class="thumb thumb--chalk board" aria-hidden="true">
-      <span class="thumb__number">Épisode {data.number}</span>
+      <span class="thumb__number">{episodeLabel(data)}</span>
       <span class="thumb__title">{data.title}</span>
     </div>
   )

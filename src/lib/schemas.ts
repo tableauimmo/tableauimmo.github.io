@@ -1,6 +1,7 @@
 // Schémas de validation du contenu, partagés par le site (src/content.config.ts) et les scripts
 // (ajout d'épisode depuis le studio, synchro YouTube). Aucun import « astro:* » : importable depuis Node.
 import { z } from 'astro/zod';
+import { SPECIAL_OFFSET } from './episode-label.ts';
 import { CATEGORY_KEYS } from '../data/categories.ts';
 import { TOOL_IDS } from '../data/tools.ts';
 import { ISO_DURATION_PATTERN, TIMESTAMP_PATTERN, timestampToSeconds, YOUTUBE_ID_PATTERN } from './youtube.ts';
@@ -62,6 +63,8 @@ export const shortSchema = z.object({
 export function episodeObject<T extends z.ZodType>(thumbnail: T) {
   return z.object({
     number: z.number().int().positive(),
+    /** Numéro spécial (documentaire de ~30 min) : number = 100 + n (hs01 → 101), affiché « Numéro spécial n° n » */
+    special: z.boolean().optional(),
     title: z.string().min(5).max(100),
     slug: slugSchema,
     status: z.enum(['upcoming', 'published']),
@@ -89,6 +92,8 @@ export function episodeObject<T extends z.ZodType>(thumbnail: T) {
 }
 
 type EpisodeShape = {
+  number: number;
+  special?: boolean | undefined;
   status: 'upcoming' | 'published';
   youtubeId?: string | undefined;
   publishedAt?: Date | undefined;
@@ -98,6 +103,12 @@ type EpisodeShape = {
 
 /** Règles croisées : un épisode publié a sa vidéo et sa date ; chapitres valides et croissants. */
 export function refineEpisode(episode: EpisodeShape, ctx: z.RefinementCtx): void {
+  if (episode.special && episode.number <= SPECIAL_OFFSET) {
+    ctx.addIssue({ code: 'custom', path: ['number'], message: `un numéro spécial a un numéro supérieur à ${SPECIAL_OFFSET} (hs01 → ${SPECIAL_OFFSET + 1})` });
+  }
+  if (!episode.special && episode.number > SPECIAL_OFFSET) {
+    ctx.addIssue({ code: 'custom', path: ['special'], message: `numéro supérieur à ${SPECIAL_OFFSET} : réservé aux numéros spéciaux (special: true)` });
+  }
   if (episode.status === 'published') {
     for (const field of ['youtubeId', 'publishedAt'] as const) {
       if (episode[field] === undefined) ctx.addIssue({ code: 'custom', path: [field], message: 'obligatoire pour un épisode publié' });

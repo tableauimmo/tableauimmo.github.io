@@ -23,7 +23,7 @@ Google et les moteurs de réponse IA (données structurées, sitemaps, `llms.txt
 | `npm test` | Tests unitaires (Vitest) : calculateurs, schémas, synchro YouTube, visibilité… |
 | `npm run test:e2e` | Construit le site réel et le site de démonstration, puis tests de bout en bout (Playwright) |
 | `npm run verify` | Tout ce qui précède : à lancer avant chaque commit |
-| `npm run episode:add -- <site_episode.json>` | Crée la fiche d'un épisode à partir du fichier du studio |
+| `npm run episode:add -- <site_ready.json>` | Crée la fiche d'un épisode à partir du fichier du studio |
 | `npm run sync:youtube` | Publie les fiches dont la vidéo est sortie (aussi fait toutes les heures par GitHub Actions) |
 | `npm run assets:og` | Régénère les images de partage (`public/og/`) et les icônes |
 | `npm run screens -- / /outils/` | Captures d'écran ordinateur et mobile dans `.screens/` (contrôle visuel) |
@@ -37,9 +37,11 @@ Tests de bout en bout : Playwright utilise le Chromium installé par `npx playwr
 
 ```
 site.config.mjs              SOURCE UNIQUE : URL du site, chemin de base, chaîne YouTube, réseaux, lecteur vidéo
+AGENTS.md                    instructions pour toute IA (Claude, Codex, Gemini) ; CLAUDE.md et GEMINI.md y renvoient
 astro.config.mjs             Astro : sitemap, CSP, Markdown (plugins), typographie française
 src/content.config.ts        schémas du contenu (un contenu invalide fait échouer le build)
-src/content/episodes/        une fiche par épisode : <epNN-slug>/index.md + thumbnail.jpg (vide au départ)
+src/content/episodes/        une fiche par épisode : <epNN-slug>/index.md + thumbnail.jpg (vide au départ) ;
+                             numéro spécial : <hsNN-slug>/, special: true, number = 100 + n
 src/content/lexique/         les 30 termes du lexique (Markdown, sources officielles, date de vérification)
 src/data/                    thèmes (8), calculateurs (4), mentions légales, images de partage
 src/tools/<outil>/logic.ts   logique pure des calculateurs (testée) ; tool.ts = champs + rendu du résultat
@@ -57,8 +59,10 @@ studio/                      dépôt PRIVÉ séparé du studio vidéo (ignoré p
 
 ## Publier un épisode
 
-1. **Le studio produit le fichier du site** : `studio/TableauImmo_Studio/episodes/epNN_slug/publication/site_episode.json`
-   (format ci-dessous), avec la miniature à côté.
+1. **Le studio produit le fichier du site** : `studio/TableauImmo_Studio/episodes/epNN_slug/publication/site_ready.json`
+   (format ci-dessous), écrit par `python3 tools/site_export.py episodes/<ep>` (dans `studio/TableauImmo_Studio`) à
+   partir des textes de l'épisode ; la miniature est à côté (`miniatures/miniature_A.jpg`). Le `site_episode.json` du
+   studio est son brouillon éditorial : `episode:add` le refuse et rappelle la commande.
 2. **Créer la fiche** (statut « upcoming » : l'épisode apparaît comme « Bientôt sur YouTube ») :
    ```bash
    npm run episode:add -- studio/TableauImmo_Studio/episodes/ep01_mon-sujet
@@ -72,10 +76,11 @@ studio/                      dépôt PRIVÉ séparé du studio vidéo (ignoré p
    fiche en « published » (identifiant, date, durée si `YOUTUBE_API_KEY`, chapitres de la description si la fiche n'en a
    pas), vérifie le site, enregistre le changement (auteur « Tableau Immo ») et redéploie.
    - Une vidéo sans fiche préparée n'est **pas** publiée sur le site (contenu financier : il doit être relu et sourcé).
-   - Pour publier sans attendre : `npm run episode:add -- <…> --force --youtube <lien> --date AAAA-MM-JJ`.
+   - Pour publier sans attendre : `npm run episode:add -- <…> --force --youtube <lien> --date AAAA-MM-JJ`. `--force`
+     ne remplace que la fiche de la même vidéo (même numéro, même slug) : il refuse d'écraser la page publiée d'une autre.
    - Tant que `YOUTUBE.channelId` est vide dans `site.config.mjs`, la synchro s'arrête proprement sans rien faire.
 
-### Format de `site_episode.json`
+### Format du fichier du site (`site_ready.json`)
 
 ```json
 {
@@ -106,6 +111,9 @@ studio/                      dépôt PRIVÉ séparé du studio vidéo (ignoré p
   "transcript": "Texte intégral dit par le narrateur."
 }
 ```
+
+Numéro spécial (documentaire de ~30 min) : ajouter `"special": true` et prendre `"number"` = 100 + n (hs01 → 101) ;
+la fiche va dans `src/content/episodes/hsNN-slug/` et s'affiche « Numéro spécial n° n ».
 
 - `category` : `financement`, `fiscalite`, `strategie`, `marche`, `juridique`, `travaux`, `location`, `patrimoine`.
 - `tools` : `credit`, `capacite`, `rendement`, `cashflow` (lien « voir l'épisode lié » sur la page du calculateur).

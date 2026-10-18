@@ -1,6 +1,7 @@
 ---
 // Épisode annoncé (pas encore sur YouTube) : une note papier scotchée.
 import { CATEGORIES } from '../data/categories.ts';
+import { episodeLabel } from '../lib/episode-label.ts';
 import type { Episode } from '../lib/episodes.ts';
 
 interface Props {
@@ -12,7 +13,7 @@ const { data } = episode;
 ---
 
 <article class="upcoming note note--tilt-r">
-  <p class="upcoming__label">Bientôt sur YouTube · Épisode {data.number}</p>
+  <p class="upcoming__label">Bientôt sur YouTube · {episodeLabel(data)}</p>
   <h3 class="upcoming__title">{data.title}</h3>
   <p class="upcoming__teaser">{data.teaser}</p>
   <p class="upcoming__theme">Thème : {CATEGORIES[data.category].label}</p>

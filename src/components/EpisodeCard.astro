@@ -2,6 +2,7 @@
 import EpisodeThumb from './EpisodeThumb.astro';
 import Icon from './Icon.astro';
 import { CATEGORIES } from '../data/categories.ts';
+import { episodeLabel } from '../lib/episode-label.ts';
 import { episodePath, type PublishedEpisode } from '../lib/episodes.ts';
 import { formatDate, isoDay } from '../lib/format.ts';
 import { href } from '../lib/url.ts';
@@ -25,7 +26,7 @@ const Heading = headingLevel;
   </div>
   <div class="ep-card__body">
     <p class="ep-card__meta">
-      <span class="ep-card__number">Épisode {data.number}</span>
+      <span class="ep-card__number">{episodeLabel(data)}</span>
       <span aria-hidden="true">·</span>
       <span>{CATEGORIES[data.category].label}</span>
     </p>

@@ -5,6 +5,7 @@ import path from 'node:path';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { normalizeForMatch, parseChapters } from '../../src/lib/youtube.ts';
 import { fetchWithRetry } from './http.ts';
+import { SPECIAL_OFFSET } from '../../src/lib/episode-label.ts';
 
 export type Frontmatter = Record<string, unknown>;
 
@@ -59,9 +60,10 @@ export async function saveEpisode(file: EpisodeFile): Promise<void> {
   await writeFile(path.join(file.dir, 'index.md'), serializeEpisode(file), 'utf8');
 }
 
-/** Dossier d'un épisode : « ep07-mon-titre ». */
-export function episodeFolder(number: number, slug: string): string {
-  return `ep${String(number).padStart(2, '0')}-${slug}`.slice(0, 80);
+/** Dossier d'un épisode : « ep07-mon-titre » ; numéro spécial (number = 100 + n) : « hs01-mon-titre ». */
+export function episodeFolder(number: number, slug: string, special = false): string {
+  const prefix = special ? `hs${String(number - SPECIAL_OFFSET).padStart(2, '0')}` : `ep${String(number).padStart(2, '0')}`;
+  return `${prefix}-${slug}`.slice(0, 80);
 }
 
 // Pas de \b : il ne reconnaît pas les lettres accentuées (« Épisode »).

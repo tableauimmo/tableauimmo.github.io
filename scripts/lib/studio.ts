@@ -1,4 +1,4 @@
-// Conversion du fichier produit par le studio (episodes/epNN_slug/publication/site_episode.json)
+// Conversion du fichier produit par le studio (episodes/<ep>/publication/site_ready.json, écrit par tools/site_export.py)
 // en fiche d'épisode du site (src/content/episodes/epNN-slug/index.md). Format documenté dans le README.
 import path from 'node:path';
 import { z } from 'astro/zod';
@@ -12,6 +12,8 @@ const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'date attendue : AAAA-MM
 
 export const studioEpisodeSchema = z.object({
   number: z.number().int().positive(),
+  /** Numéro spécial (documentaire de ~30 min) : number = 100 + n */
+  special: z.boolean().optional(),
   slug: slugSchema,
   title: z.string().min(5).max(100),
   summary: z.string().min(SUMMARY_MIN).max(SUMMARY_MAX),
@@ -42,7 +44,7 @@ function issues(error: z.ZodError): string {
 }
 
 /** Valide le JSON du studio ; message d'erreur lisible (un problème par ligne). */
-export function parseStudioEpisode(json: unknown, source = 'site_episode.json'): StudioEpisode {
+export function parseStudioEpisode(json: unknown, source = 'site_ready.json'): StudioEpisode {
   const parsed = studioEpisodeSchema.safeParse(json);
   if (!parsed.success) throw new Error(`${source} invalide :\n  ${issues(parsed.error)}`);
   return parsed.data;
@@ -57,6 +59,7 @@ export interface Publication {
 export function studioToEpisodeFile(studio: StudioEpisode, episodesDir: string, options: { thumbnailName?: string | undefined; publication?: Publication | undefined } = {}): EpisodeFile {
   const frontmatter: Frontmatter = {
     number: studio.number,
+    ...(studio.special ? { special: true } : {}),
     title: studio.title,
     slug: studio.slug,
     status: options.publication ? 'published' : 'upcoming',
@@ -82,6 +85,6 @@ export function studioToEpisodeFile(studio: StudioEpisode, episodesDir: string, 
   const body = `\n${studio.article.trim()}\n\n## Transcription\n\n${transcript}\n`;
   const checked = episodeFileSchema.safeParse(frontmatter);
   if (!checked.success) throw new Error(`Fiche générée invalide :\n  ${issues(checked.error)}`);
-  const folder = episodeFolder(studio.number, studio.slug);
+  const folder = episodeFolder(studio.number, studio.slug, studio.special === true);
   return { dir: path.join(episodesDir, folder), folder, frontmatter, body };
 }

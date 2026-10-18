@@ -14,6 +14,7 @@ import Icon from '../../components/Icon.astro';
 import { SITE, YOUTUBE } from '../../../site.config.mjs';
 import { CATEGORIES, categoryPath } from '../../data/categories.ts';
 import { TOOLS, toolPath } from '../../data/tools.ts';
+import { episodeLabel, episodeLabelLower } from '../../lib/episode-label.ts';
 import { episodePath, getPublishedEpisodes, lastUpdated, neighbours, relatedEpisodes, type PublishedEpisode } from '../../lib/episodes.ts';
 import { faqNode, seriesNode, videoNode } from '../../lib/jsonld.ts';
 import { formatDate, isoDay } from '../../lib/format.ts';
@@ -42,7 +43,7 @@ const updated = lastUpdated(episode);
 
 const path = episodePath(episode);
 const pageUrl = absoluteUrl(path);
-const alt = `${data.title} — épisode ${data.number} de ${SITE.name}`;
+const alt = `${data.title} — ${episodeLabelLower(data)} de ${SITE.name}`;
 const image: SocialImage = data.thumbnail
   ? await thumbnailImage(data.thumbnail, alt)
   : { url: youtubeThumbnailUrl(data.youtubeId), width: 480, height: 360, alt };
@@ -66,7 +67,7 @@ const jsonLd = [
     youtubeId: data.youtubeId,
     embedUrl: embedUrl(data.youtubeId),
     duration: data.duration,
-    episodeNumber: data.number,
+    episodeNumber: data.special ? undefined : data.number,
     keywords: [category.label, ...data.tags],
     about: category.title,
     chapters,
@@ -91,7 +92,7 @@ const crumbs = [
   jsonLd={jsonLd}
   modified={updated}
 >
-  <PageHead crumbs={crumbs} kicker={`Épisode ${data.number} · ${category.label}`} title={data.title} lead={data.summary} compact>
+  <PageHead crumbs={crumbs} kicker={`${episodeLabel(data)} · ${category.label}`} title={data.title} lead={data.summary} compact>
     <ul class="meta-line episode__meta">
       <li><Icon name="calendar" size={16} /> Publié le <time datetime={isoDay(data.publishedAt)}>{formatDate(data.publishedAt)}</time></li>
       <li class="episode__updated-chip"><Icon name="refresh" size={16} /> Mis à jour le <time datetime={isoDay(updated)}>{formatDate(updated)}</time></li>

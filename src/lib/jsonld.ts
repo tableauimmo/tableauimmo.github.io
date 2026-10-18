@@ -91,7 +91,8 @@ export interface VideoInput {
   youtubeId: string;
   embedUrl: string;
   duration: string | undefined;
-  episodeNumber: number;
+  /** Absent pour un numéro spécial (hors de la numérotation des épisodes) */
+  episodeNumber?: number | undefined;
   keywords: string[];
   about: string;
   chapters: { start: number; end: number; title: string; url: string }[];
@@ -113,7 +114,7 @@ export function videoNode(video: VideoInput): JsonLdNode {
     contentUrl: `https://www.youtube.com/watch?v=${video.youtubeId}`,
     inLanguage: SITE.locale,
     isAccessibleForFree: true,
-    episodeNumber: video.episodeNumber,
+    ...(video.episodeNumber !== undefined ? { episodeNumber: video.episodeNumber } : {}),
     partOfSeries: { '@id': SERIES_ID },
     author: ORG_REF,
     publisher: ORG_REF,
